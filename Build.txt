@@ -1,0 +1,4880 @@
+Below is a buildable, local-first, agent-driven motion-graphics production system designed around your constraints.
+
+Important accuracy note:
+
+• I cannot verify a current public “HyperFrames” API from here. To avoid inventing syntax, this design defines an internal, deterministic HyperFrames runtime contract under hyperframes/core/. If you later connect a different external HyperFrames renderer, only the adapter in hyperframes/core/runtime.ts and scripts/render-hyperframes.ts should need replacement.
+• The Remotion code uses commonly documented Remotion v4 patterns: Composition, AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring, Sequence.
+• OpenCode behavior is encoded operationally in AGENTS.md. If your OpenCode version has its own model configuration UI/config file, point its default coding model to LongCat 2.0 there. The repository contract is file-based, not magic-string-based.
+
+───
+
+A. Architecture
+
+Core idea
+
+This is not “AI makes animation.”
+
+It is:
+
+text
+Human taste / direction
+        ↓
+Strong vision/reasoning model, optional
+        ↓
+Structured analysis artifacts
+        ↓
+Machine-readable shot specification
+        ↓
+OpenCode + LongCat implementation
+        ↓
+Reusable motion primitives
+        ↓
+Deterministic preview/render
+        ↓
+Inspection report
+        ↓
+Controlled iteration
+        ↓
+DaVinci Resolve finishing
+
+
+The repository is a deterministic motion-design operating environment. The agent operates it; it does not freely improvise.
+
+Runtime division
+
+HyperFrames runtime
+
+Used for:
+
+• GSAP-driven choreography
+• DOM/SVG-heavy scenes
+• kinetic typography
+• art-directed 2D motion
+• camera-like transform choreography
+• highly custom entrance behavior
+• scenes where timeline control matters more than React composition
+
+In this repository, HyperFrames means:
+
+• a scene module
+• a deterministic GSAP timeline
+• a frame-seekable DOM renderer
+• a headless browser capture pipeline
+• FFmpeg encoding
+
+The HyperFrames scene must be seekable by exact frame.
+
+Remotion runtime
+
+Used for:
+
+• React component reuse
+• data-driven scenes
+• repeated list/table/card layouts
+• parametric templates
+• compositions where props determine content
+• deterministic React rendering
+• scenes that benefit from Remotion’s composition model
+
+Remotion scenes must be pure functions of frame and props.
+
+GSAP
+
+GSAP is used inside HyperFrames for:
+
+• timeline choreography
+• stagger
+• overshoot
+• elastic settle
+• camera-like transforms
+• layered secondary motion
+
+GSAP is not used as a substitute for a spec. Every GSAP timeline must map to frames and easing categories defined in the shot spec.
+
+FFmpeg
+
+Used for:
+
+• encoding HyperFrames PNG sequences
+• inspection frame extraction
+• contact sheets
+• final container conversion where needed
+
+DaVinci Resolve Free
+
+Used for:
+
+• final editorial assembly
+• color polish
+• audio sync
+• sound design
+• final delivery
+• human taste pass
+
+Resolve is not used for core motion implementation.
+
+───
+
+B. Repository Tree
+
+text
+motion-factory/
+├── AGENTS.md
+├── package.json
+├── tsconfig.json
+├── README.md
+├── .gitignore
+│
+├── skills/
+│   ├── motion-language.md
+│   ├── shot-specification.md
+│   ├── creative-translation.md
+│   ├── hyperframes-vs-remotion.md
+│   ├── reference-analysis.md
+│   ├── validation.md
+│   └── resolve.md
+│
+├── motion/
+│   ├── index.ts
+│   ├── spec/
+│   │   └── shot-spec.ts
+│   ├── core/
+│   │   ├── frames.ts
+│   │   ├── interpolate.ts
+│   │   ├── stagger.ts
+│   │   ├── rng.ts
+│   │   └── spring.ts
+│   ├── easing/
+│   │   └── index.ts
+│   ├── text/
+│   │   └── char-reveal.ts
+│   ├── transitions/
+│   │   └── wipe.ts
+│   ├── camera/
+│   │   └── push.ts
+│   └── effects/
+│       └── grain-notes.md
+│
+├── hyperframes/
+│   ├── core/
+│   │   ├── host.html
+│   │   ├── runtime.ts
+│   │   ├── dom.ts
+│   │   └── types.ts
+│   ├── components/
+│   │   └── README.md
+│   ├── scenes/
+│   │   └── example-signal-opening/
+│   │       ├── entry.ts
+│   │       └── scene.ts
+│   └── templates/
+│       └── README.md
+│
+├── remotion/
+│   ├── index.ts
+│   ├── Root.tsx
+│   ├── registry.ts
+│   ├── components/
+│   │   └── MetricRow.tsx
+│   ├── compositions/
+│   │   └── ExampleMetrics.tsx
+│   └── templates/
+│       └── README.md
+│
+├── projects/
+│   ├── project-template/
+│   │   ├── project.md
+│   │   ├── references/
+│   │   ├── specs/
+│   │   ├── scenes/
+│   │   ├── assets/
+│   │   ├── previews/
+│   │   ├── renders/
+│   │   └── metadata/
+│   │
+│   └── example-signal/
+│       ├── project.md
+│       ├── references/
+│       │   └── analysis-shot-001.md
+│       ├── specs/
+│       │   └── shot-001.yaml
+│       ├── scenes/
+│       ├── assets/
+│       ├── previews/
+│       ├── renders/
+│       └── metadata/
+│           └── decisions.md
+│
+├── scripts/
+│   ├── lib/
+│   │   ├── args.ts
+│   │   ├── paths.ts
+│   │   ├── files.ts
+│   │   ├── exec.ts
+│   │   ├── spec.ts
+│   │   ├── remotion.ts
+│   │   └── hyperframes.ts
+│   ├── create-project.ts
+│   ├── validate.ts
+│   ├── preview.ts
+│   ├── render.ts
+│   ├── inspect.ts
+│   ├── list-scenes.ts
+│   ├── clean.ts
+│   └── render-hyperframes.ts
+│
+├── resolve/
+│   └── README.md
+│
+├── public/
+│   └── fonts/
+│       └── .gitkeep
+│
+└── .tmp/
+
+
+Why each major directory exists
+
+skills/
+
+Operational knowledge for agents. These are not essays. They encode rules that must affect implementation.
+
+motion/
+
+Framework-independent and GSAP-assisted motion primitives. This prevents LongCat from inventing a new animation system for every shot.
+
+hyperframes/
+
+The high-control DOM/GSAP runtime and scenes.
+
+remotion/
+
+React/Remotion compositions, especially data-driven or component-heavy scenes.
+
+projects/
+
+All user-facing production work lives here. Each project owns specs, references, assets, previews, renders, and metadata.
+
+scripts/
+
+The executable factory floor: create, validate, preview, render, inspect, clean.
+
+resolve/
+
+Handoff rules and output conventions for DaVinci Resolve.
+
+.tmp/
+
+Disposable build artifacts. Never manually edit anything here.
+
+───
+
+C. Complete Configuration Files
+
+package.json
+
+json
+{
+  "name": "motion-factory",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Free, local-first, agent-driven motion graphics production system.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "create-project": "tsx scripts/create-project.ts",
+    "validate": "tsx scripts/validate.ts",
+    "preview": "tsx scripts/preview.ts",
+    "render": "tsx scripts/render.ts",
+    "inspect": "tsx scripts/inspect.ts",
+    "list-scenes": "tsx scripts/list-scenes.ts",
+    "clean": "tsx scripts/clean.ts",
+    "render-hyperframes": "tsx scripts/render-hyperframes.ts",
+    "studio": "remotion studio remotion/index.ts"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.0",
+    "gsap": "^3.12.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.0",
+    "yaml": "^2.5.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "esbuild": "^0.23.0",
+    "playwright": "^1.45.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.4"
+  }
+}
+
+
+tsconfig.json
+
+json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node"]
+  },
+  "include": [
+    "scripts/**/*.ts",
+    "motion/**/*.ts",
+    "hyperframes/**/*.ts",
+    "remotion/**/*.ts",
+    "remotion/**/*.tsx"
+  ]
+}
+
+
+.gitignore
+
+gitignore
+node_modules/
+.tmp/
+projects/*/previews/*
+projects/*/renders/*
+!projects/*/previews/.gitkeep
+!projects/*/renders/.gitkeep
+*.log
+.DS_Store
+
+
+README.md
+
+md
+# Motion Factory
+
+Local-first, agent-driven motion graphics production system.
+
+## Principles
+
+1. Visual quality first.
+2. Deterministic rendering.
+3. Reuse motion primitives.
+4. Specs precede implementation.
+5. Resolve is for finishing, not motion authoring.
+
+## Commands
+
+```bash
+npm install
+npx playwright install chromium
+npx remotion browser ensure
+
+<br>
+
+npm run create-project my-video
+npm run validate -- --project my-video
+npm run preview -- --project my-video --shot shot-001
+npm run inspect -- --project my-video --shot shot-001
+npm run render -- --project my-video --shot shot-001
+
+Agent contract
+Read AGENTS.md before modifying anything.
+<br>
+
+---
+
+<br>
+
+# D. Complete `AGENTS.md`
+
+<br>
+
+```md
+# AGENTS.md
+
+You are operating a deterministic motion-graphics production repository.
+
+You are not here to “be creative” by rewriting the system.
+You are here to implement, modify, and validate motion work inside a controlled factory.
+
+The human supplies taste, references, direction, and final judgment.
+The motion library supplies reusable animation behavior.
+The runtime supplies execution.
+You supply precise implementation and disciplined iteration.
+
+## 1. Repository purpose
+
+This repository produces high-quality 2D motion graphics using:
+
+- HyperFrames for high-control DOM/GSAP scenes
+- Remotion for React/data-driven scenes
+- GSAP for timeline choreography inside HyperFrames
+- TypeScript for implementation
+- FFmpeg for encoding and inspection
+- DaVinci Resolve for final assembly and finishing
+
+This repository does NOT target After Effects.
+
+## 2. Prime directives
+
+Observe these rules in this order:
+
+1. Preserve visual quality.
+2. Preserve reliability.
+3. Preserve maintainability.
+4. Preserve automation.
+5. Preserve convenience.
+
+If a request conflicts with these priorities, choose the higher priority.
+
+## 3. Mandatory startup behavior
+
+Before modifying any file:
+
+1. Read this file.
+2. Read `skills/motion-language.md`.
+3. Read `skills/shot-specification.md`.
+4. Read `skills/hyperframes-vs-remotion.md`.
+5. Read the active project’s `project.md`.
+6. Read the active shot’s YAML spec if one exists.
+7. Read existing scene code before changing it.
+8. Check `motion/` for an existing primitive before writing new animation logic.
+
+Do not propose code changes based only on the prompt.
+
+## 4. Inspection protocol
+
+When asked to modify a scene:
+
+1. Identify the project and shot.
+2. Open the shot spec:
+   - `projects/<project>/specs/<shot>.yaml`
+3. Open the implementation entry:
+   - HyperFrames: `hyperframes/scenes/<sceneId>/entry.ts`
+   - Remotion: composition registered in `remotion/Root.tsx`
+4. Identify:
+   - duration
+   - fps
+   - resolution
+   - runtime
+   - sequence steps
+   - negative instructions
+   - asset references
+5. Only then modify code.
+
+If no shot spec exists:
+
+1. Create a minimal valid shot spec first.
+2. Validate it.
+3. Then implement.
+
+Never implement a shot without a spec unless explicitly told to create a throwaway test.
+
+## 5. Runtime selection
+
+Use HyperFrames when:
+
+- the shot depends on GSAP timeline choreography
+- the shot uses DOM/SVG art direction
+- the shot requires complex kinetic type
+- the shot needs layered entrance/exit choreography
+- the shot needs custom camera-like transform behavior
+- React component reuse is not the primary value
+
+Use Remotion when:
+
+- the shot is data-driven
+- the shot repeats structured components
+- the shot is parametric
+- the shot benefits from React composition
+- the shot is a template
+- content changes are driven by props
+
+If both are plausible:
+
+- choose HyperFrames for choreography-heavy shots
+- choose Remotion for structure-heavy shots
+
+Never choose a runtime based on novelty.
+
+## 6. GSAP usage rules
+
+Use GSAP only inside HyperFrames scenes or GSAP-specific motion primitives.
+
+GSAP timelines must be:
+
+- paused
+- deterministic
+- frame-seekable
+- driven by the scene’s fps
+- constructed from frame counts, not ad-hoc seconds
+- free of `Date.now()`, `Math.random()`, or async timing
+
+Do not use:
+
+- `setTimeout`
+- `setInterval`
+- `requestAnimationFrame`
+- event-driven animation state
+
+for core shot motion.
+
+All GSAP animation must be inspectable by seeking a frame.
+
+## 7. Primitive reuse rules
+
+Before writing any animation behavior, search `motion/` for an existing primitive.
+
+Reuse a primitive when:
+
+- it already expresses the required behavior
+- it can be parameterized without breaking its API
+- it is close enough that extension is safer than reimplementation
+
+Do not create a new primitive if:
+
+- the behavior is scene-specific
+- the behavior is only used once
+- the behavior is a composition of existing primitives
+- the behavior can be expressed with existing GSAP easing and transforms
+
+A new primitive is justified only when:
+
+1. the behavior is reusable across scenes
+2. the behavior has a stable API
+3. the behavior is deterministic
+4. the behavior cannot be cleanly expressed by existing primitives
+5. the primitive can be documented and validated
+
+When creating a new primitive:
+
+- place it in the correct `motion/` subdirectory
+- use a clear verb or noun-verb name
+- accept a typed options object
+- provide defaults
+- avoid DOM coupling unless it is a DOM primitive
+- do not introduce a new dependency without strong justification
+
+## 8. Shot specification interpretation
+
+A shot spec is the source of truth.
+
+When implementing a spec:
+
+- implement exactly the declared runtime
+- preserve the declared fps
+- preserve the declared resolution
+- preserve the declared duration
+- honor all `negative` instructions
+- honor all asset constraints
+- map sequence steps to timeline events
+- use easing names from the controlled
+
+Rules:
+• one shot has one fps
+• do not mix frame bases
+• do not assume 60fps unless spec says so
+• holds are valid timing choices
+• pauses are valid timing choices
+• stagger must be intentional, not decorative
+• entrances must not all start on the same frame unless the spec requires it
+13. Frame rate rules
+Allowed default fps values:
+• 24
+• 25
+• 30
+• 50
+• 60
+If a spec uses another fps, validation must fail unless the project explicitly overrides allowed fps.
+Do not:
+• change fps to make timing easier
+• retarget animation by changing fps
+• mix fps between spec and implementation
+14. Dimension rules
+Resolution must come from the shot spec.
+Do not:
+• hardcode 1920x1080 in scene logic when a spec exists
+• change aspect ratio casually
+• use percentage-based layout that breaks intended composition at spec resolution
+If a scene is responsive, it must still be art-directed at the spec resolution.
+15. Asset path rules
+Project assets live under:
+text
+projects/&lt;project&gt;/assets/
+
+Rules:
+• do not reference assets outside the project folder except system fonts
+• do not commit large binaries casually
+• images must be declared in the shot spec
+• fonts must be declared in the shot spec
+• missing assets are validation failures
+• use system: prefix for system fonts in specs
+Example:
+yaml
+assets:
+  - id: font-main
+    type: font
+    path: system:Arial
+
+16. Font rules
+Prefer:
+1. local open fonts in public/fonts/
+2. explicitly declared system fonts for early tests
+Do not:
+• fetch Google Fonts at render time unless explicitly allowed
+• depend on unavailable fonts
+• silently fall back without declaring it
+• change type hierarchy casually
+For deterministic rendering, local fonts are preferred.
+17. Deterministic rendering rules
+All renders must be repeatable.
+Forbidden in scene code:
+• Math.random()
+• crypto.getRandomValues()
+• unseeded procedural generation
+• Date.now()
+• performance.now() for motion logic
+• network-fetched content required for frame calculation
+• async timers driving animation
+Allowed:
+• seeded RNG from motion/core/rng.ts
+• pure functions of frame
+• deterministic GSAP timelines
+• local assets
+If randomness is needed:
+1. use seededRandom(seed)
+2. derive all random values at construction time
+3. keep them stable across frames
+18. Preview and rendering protocol
+When implementation changes:
+1. validate the spec
+2. render a preview
+3. inspect the output
+4. compare against the spec
+5. identify deviations
+6. modify only what is necessary
+7. render again
+Preview command:
+bash
+npm run preview -- --project &lt;project&gt; --shot &lt;shot&gt;
+
+Render command:
+bash
+npm run render -- --project &lt;project&gt; --shot &lt;shot&gt;
+
+Inspect command:
+bash
+npm run inspect -- --project &lt;project&gt; --shot &lt;shot&gt;
+
+Do not declare success without:
+• validation passing
+• preview/render command succeeding
+• an inspection artifact existing
+19. Validation strategy
+Validation is split into three layers.
+Deterministic code validation
+This can be automated:
+• spec schema validity
+• missing assets
+• invalid fps
+• invalid dimensions
+• missing scene entries
+• missing Remotion compositions
+• forbidden randomness
+• duplicate primitives
+• broken imports
+• sequence targets that do not exist
+Use:
+bash
+npm run validate -- --project &lt;project&gt;
+
+Visual validation
+This cannot be fully automated.
+Use:
+• preview video
+• contact sheet
+• frame inspection
+• human judgment
+• optional stronger vision model review
+Human validation
+The human decides:
+• taste
+• emotional pacing
+• brand fit
+• final approval
+Do not pretend visual quality is fully unit-testable.
+20. Iteration rules
+When iterating:
+1. identify the most likely weakness
+2. state the hypothesis
+3. change the smallest relevant area
+4. preserve unrelated work
+5. re-render
+6. compare
+Do not:
+• rewrite the scene because one thing is weak
+• add effects to compensate for bad timing
+• increase blur/glow to “make it better”
+• change easing everywhere because one transition feels wrong
+21. Behavior when the user says “Make this better”
+This phrase is not permission to randomly rewrite.
+You must:
+1. inspect the current scene
+2. inspect the shot spec
+3. inspect the latest preview/inspection artifacts if available
+4. identify likely weaknesses in this order: 
+◦ composition hierarchy
+◦ timing
+◦ easing
+◦ typography
+◦ camera intention
+◦ transition logic
+◦ excessive effects
+5. state internally what you believe is weak
+6. propose the smallest meaningful change
+7. implement only that change
+8. render preview
+9. validate
+10. report what changed and what was preserved
+If no clear weakness is identifiable, say so and ask for direction.
+Do not respond to “make this better” by:
+• adding glow
+• adding particles
+• adding camera shake
+• making everything move more
+• replacing the animation system
+• rewriting working code
+22. Preventing agent degradation
+You must avoid these failure modes:
+Rewriting working code
+Do not rewrite code that already satisfies the spec unless:
+• it is broken
+• it is nondeterministic
+• it violates a documented rule
+• the spec changed
+Duplicating utilities
+Do not create a new utility if a reusable one exists.
+Changing unrelated files
+Do not touch files unrelated to the requested change.
+Adding unnecessary dependencies
+Do not add dependencies unless:
+• they solve a concrete production problem
+• they are free
+• they are local-first
+• they reduce fragility
+Creating inconsistent APIs
+All new primitives must follow existing naming and options conventions.
+Hardcoding values
+Do not hardcode:
+• fps
+• duration
+• resolution
+• asset paths
+• magic timing numbers
+unless they are local constants clearly tied to the spec.
+Replacing existing animations
+Do not replace an existing animation behavior unless the spec or explicit user instruction requires it.
+Accumulating technical debt
+Do not leave dead code, unused imports, unused assets, or orphaned helpers.
+Monolithic components
+Do not create enormous scene files when:
+• components can be extracted
+• repeated behavior can become a primitive
+• sections of timeline can become helper functions
+Ignoring existing primitives
+If a primitive exists, use it or extend it.
+23. Code style rules
+Use:
+• TypeScript
+• explicit types for public APIs
+• options objects for parameter-rich functions
+• frame-based parameters
+• deterministic pure functions where possible
+Avoid:
+• any
+• untyped parameters
+• implicit globals
+• magic numbers without comments
+• scene-local copies of shared logic
+24. Naming conventions
+Files
+• kebab-case for files
+• PascalCase for React components
+• camelCase for TypeScript functions
+Scenes
+HyperFrames scene IDs:
+text
+example-signal-opening
+product-hero-intro
+lower-third-v2
+
+Shots
+Shot IDs:
+text
+shot-001
+shot-002
+shot-010
+
+Primitives
+Use clear names:
+ts
+charRevealTimeline
+staggerStartFrame
+cameraPushTimeline
+wipeTransitionTimeline
+
+25. Required implementation pattern for HyperFrames
+A HyperFrames scene must expose:
+• meta
+• deterministic create function
+• seekable controller
+The scene must not rely on playback.
+It must support:
+ts
+seek(frame: number): void
+
+26. Required implementation pattern for Remotion
+A Remotion composition must:
+• be a pure React function of frame and props
+• use useCurrentFrame()
+• use useVideoConfig()
+• avoid side effects
+• avoid random values without seeded derivation
+• avoid browser-only state that changes by run
+27. Asset and font loading
+Do not depend on runtime network access.
+If an asset is required:
+1. put it in the project assets folder
+2. declare it in the shot spec
+3. validate it exists
+4. use a deterministic path
+28. Resolve handoff rules
+Render from HyperFrames/Remotion only what should be generated.
+Leave to Resolve:
+• audio
+• final grade
+• final mix
+• final pacing adjustments
+• final delivery packaging
+Do not attempt fragile end-to-end Resolve automation unless explicitly requested.
+29. Debugging rules
+When a render fails:
+1. reproduce with the exact command
+2. inspect the shot spec
+3. inspect the scene entry
+4. inspect missing assets
+5. inspect imports
+6. inspect deterministic violations
+7. fix the smallest broken layer
+When a scene looks wrong:
+1. check timing first
+2. check easing second
+3. check hierarchy third
+4. check effects last
+Do not begin by adding visual noise.
+30. Definition of done
+A shot is done only when:
+1. the spec validates
+2. the implementation matches the spec
+3. preview renders successfully
+4. inspection artifacts exist
+5. deterministic validation passes
+6. the shot obeys negative instructions
+7. unrelated scenes remain intact
+8. the human has approved the visual result
+No agent may declare completion before these are true.
+<br>
+
+---
+
+<br>
+
+# E. Complete Skill Files
+
+<br>
+
+Below are the most important operational skills in full.
+
+<br>
+
+## `skills/motion-language.md`
+
+<br>
+
+```md
+# Motion Language
+
+This skill defines how motion design decisions are translated into operational rules.
+
+The purpose is to prevent generic, weightless, evenly-eased animation.
+
+## 1. Timing vocabulary
+
+### Anticipation
+
+A preparatory movement before the main action.
+
+Use when:
+
+- an object enters forcefully
+- a title impacts
+- a camera move begins
+- an element prepares to exit
+
+Operational rule:
+
+- if an element moves fast, add a smaller preparatory movement before the main movement
+- anticipation should usually be shorter than the main action
+
+Example:
+
+- title pulls back 2–4% of width before launching in
+- shape compresses slightly before jumping
+
+### Acceleration
+
+The rate at which motion gains speed.
+
+Rules:
+
+- entrances often begin slow and accelerate
+- mechanical motion may accelerate sharply
+- cinematic motion usually accelerates gently
+
+Avoid:
+
+- instant full-speed motion unless the style is hard-cut
+
+### Deceleration
+
+The rate at which motion slows.
+
+Rules:
+
+- most elements should decelerate into rest
+- deceleration should be longer than acceleration for elegant motion
+- sharp graphics may use short deceleration
+
+Avoid:
+
+- stopping abruptly without settle unless the style is mechanical
+
+### Overshoot
+
+The element passes its target slightly and returns.
+
+Use when:
+
+- playful motion
+- kinetic type
+- snappy UI motion
+- impact emphasis
+
+Rules:
+
+- overshoot amount should be small unless the style is broad
+- overshoot must settle
+- overshoot is not a substitute for anticipation
+
+### Settle
+
+The return from overshoot or residual motion to rest.
+
+Rules:
+
+- settle must be visible but controlled
+- elastic settle should have hierarchy
+- do not make every element settle identically
+
+### Holds
+
+A full stop.
+
+Rules:
+
+- holds are powerful
+- a hold can create emphasis
+- do not fear stillness
+
+Avoid:
+
+- constant micro-motion when the shot needs clarity
+
+### Pauses
+
+A timing gap between events.
+
+Rules:
+
+- pauses create rhythm
+- use pauses before important reveals
+- do not fill every frame with action
+
+### Stagger
+
+Offsetting the timing of related elements.
+
+Rules:
+
+- stagger should reveal hierarchy
+- stagger should usually be small
+- stagger direction should follow reading order or spatial logic
+
+Avoid:
+
+- identical stagger on unrelated elements
+- random stagger without visual logic
+
+### Overlap
+
+Related elements do not start and stop at the same time.
+
+Rules:
+
+- primary action leads
+- secondary action follows
+- background/environment trails or drifts independently
+
+### Follow-through
+
+Secondary elements continue moving after the primary element stops.
+
+Rules:
+
+- use for tails, underlines, particles, supporting shapes
+- keep it subtle
+
+## 2. Spatial behavior
+
+### Screen direction
+
+Motion direction must have meaning.
+
+Rules:
+
+- preserve directional continuity across shots
+- left-to-right often reads as progression
+- right-to-left can read as return or opposition
+- vertical motion should imply hierarchy or arrival
+
+### Hierarchy
+
+Only one dominant motion should own the viewer’s attention at a time.
+
+Rules:
+
+- primary element moves first or strongest
+- secondary elements support
+- tertiary elements decorate
+- environment never competes with primary message
+
+### Focal point
+
+Every moment must have one clear focal point.
+
+Rules:
+
+- place focal point in a strong composition zone
+- use contrast, motion, and scale to reinforce it
+- do not animate corners unless they matter
+
+### Relative movement
+
+Elements should relate to each other spatially.
+
+Rules:
+
+- supporting elements should respond to primary elements
+- background movement should be slower than foreground
+- parallax should imply depth, not just drift
+
+### Depth
+
+Depth is created by:
+
+- scale
+- parallax
+- blur
+- value contrast
+- speed difference
+
+Rules:
+
+- background moves slower
+- foreground moves faster
+- camera moves should affect layers differently
+
+## 3. Motion hierarchy
+
+### Primary elements
+
+These carry the message.
+
+Examples:
+
+- main title
+- hero product
+- core graphic
+- central callout
+
+Behavior:
+
+- strongest motion
+- clearest timing
+- best easing
+- most deliberate entrance/exit
+
+### Secondary elements
+
+These support the primary message.
+
+Examples:
+
+- subtitle
+- underline
+- supporting shape
+- indicator line
+
+Behavior:
+
+- follow primary elements
+- softer easing
+- smaller displacement
+- slight delay
+
+### Tertiary elements
+
+These add texture.
+
+Examples:
+
+- tick marks
+- small shapes
+- highlight pulses
+
+Behavior:
+
+- subtle
+- short-lived
+- low contrast
+- should not draw focus
+
+### Environmental elements
+
+These establish space.
+
+Examples:
+
+- grain
+- particles
+- background grid
+- glow fields
+
+Behavior:
+
+- very slow or very subtle
+- deterministic
+- never synchronized with primary entrances unless intentional
+- must not become decorative noise
+
+## 4. Easing categories
+
+Use controlled easing categories.
+
+### linea
+
+
+───
+
+skills/shot-specification.md
+
+md
+# Shot Specification
+
+A shot specification is the machine-readable contract for a shot.
+
+It must be detailed enough that two competent agents produce similar results.
+
+## File conventions
+
+Human-readable analysis:
+
+```text
+projects/&lt;project&gt;/references/analysis-&lt;shot&gt;.md
+
+Machine-readable spec:
+text
+projects/&lt;project&gt;/specs/&lt;shot&gt;.yaml
+
+Required fields
+A valid shot spec must define:
+• project
+• id
+• runtime
+• durationFrames
+• fps
+• width
+• height
+• purpose
+• sequence
+• implementation
+Recommended fields
+• seed
+• composition
+• colors
+• typography
+• elements
+• camera
+• transitions
+• effects
+• soundHooks
+• assets
+• constraints
+• negative
+• references
+• expectedOutput
+Time model
+All timing is frame-based.
+Do not use seconds in specs except in notes.
+Easing model
+Only these easing names are allowed:
+• linear
+• smooth
+• sharp
+• elastic
+• overshoot
+• mechanical
+• cinematic
+• organic
+Sequence model
+Each sequence step describes:
+• what target moves
+• what action occurs
+• when it starts
+• how long it takes
+• what easing category it uses
+• optional parameters
+Targets should refer to:
+• element IDs
+• typography IDs
+• camera
+• root
+Negative instructions
+Use these to prevent common failures.
+Examples:
+yaml
+negative:
+  - rule: "No random particle flicker"
+    reason: "Determinism and restraint"
+  - rule: "No glow stronger than 25% opacity"
+    reason: "Preserve legibility"
+
+Implementation mapping
+For HyperFrames:
+yaml
+implementation:
+  sceneId: example-signal-opening
+
+For Remotion:
+yaml
+implementation:
+  compositionId: ExampleMetrics
+  props:
+    title: "SYSTEM OUTPUT"
+
+Validation rule
+If the spec cannot be validated, implementation must not begin.
+<br>
+
+---
+
+<br>
+
+## `skills/creative-translation.md`
+
+<br>
+
+```md
+# Creative Translation
+
+This skill defines how creative intent becomes executable motion logic.
+
+The goal is not vague interpretation.
+The goal is controlled translation.
+
+## Translation pipeline
+
+```text
+human phrase / reference
+↓
+motion intent
+↓
+hierarchy
+↓
+timing structure
+↓
+easing categories
+↓
+sequence steps
+↓
+implementation
+
+Example 1
+Human instruction:
+Large title enters aggressively from the left, compresses slightly before stopping, then the supporting text follows with a softer movement.
+Motion intent
+• primary: title
+• secondary: supporting text
+• direction: left to right
+• energy: aggressive for title, soft for support
+• secondary motion: compression before settle
+Hierarchy
+1. title
+2. supporting text
+Timing structure
+• title starts early
+• title has anticipation or strong acceleration
+• title overshoots/compresses near target
+• support starts after title impact
+• support uses softer easing
+Spec translation
+yaml
+sequence:
+  - id: title-enter
+    target: title-main
+    action: enter
+    atFrame: 18
+    durationFrames: 14
+    ease: sharp
+    params:
+      fromX: -760
+      overshoot: true
+      squash: true
+
+<br>
+
+  - id: support-enter
+    target: text-support
+    action: enter
+    atFrame: 46
+    durationFrames: 22
+    ease: smooth
+    params:
+      stagger: true
+
+GSAP implementation pattern
+ts
+tl.set(title, { x: -760, scaleX: 1.16, opacity: 0 }, s(16));
+tl.to(title, { x: 48, scaleX: 0.92, opacity: 1, duration: s(9), ease: "power4.in" }, s(18));
+tl.to(title, { x: 0, scaleX: 1.06, scaleY: 0.94, duration: s(4), ease: "power2.out" }, s(27));
+tl.to(title, { scaleX: 1, scaleY: 1, duration: s(16), ease: "elastic.out(1,0.58)" }, s(31));
+
+<br>
+
+tl.add(charRevealTimeline(support, {
+  text: "Supporting line",
+  fps,
+  startFrame: 46,
+  staggerFrames: 1.5,
+  durationPerCharFrames: 10,
+  ease: "smooth",
+  y: 22
+}).paused(false), 0);
+
+Example 2
+Human instruction:
+The background should feel alive, but not distract from the title.
+Translation
+• environmental elements only
+• slow drift
+• low contrast
+• no synchronization with title entrance
+• deterministic seed
+Implementation rule
+Use seeded particles with long sine drifts, low opacity, and no sudden scale changes.
+Example 3
+Human instruction:
+Make the transition feel like a hard cut, not a soft dissolve.
+Translation
+• use wipe or impact frame
+• short duration
+• sharp easing
+• preserve screen direction
+• avoid blur-heavy dissolve
+What not to do
+Do not translate:
+• “make it better” → add glow
+• “more dynamic” → make everything move
+• “premium” → slow blur and particles
+• “clean” → remove all secondary motion
+Instead, translate into hierarchy, timing, and restraint.
+<br>
+
+---
+
+<br>
+
+## `skills/hyperframes-vs-remotion.md`
+
+<br>
+
+```md
+# HyperFrames vs Remotion Decision System
+
+Use this skill whenever choosing a runtime.
+
+## Choose HyperFrames if any of these are true
+
+1. The shot depends on GSAP timeline choreography.
+2. The shot is heavily art-directed in DOM/SVG.
+3. The shot uses kinetic typography with custom entrances.
+4. The shot needs layered secondary motion with precise overlaps.
+5. The shot uses camera-like transform choreography.
+6. The shot depends on custom DOM effects or filters.
+7. The shot’s difficulty is choreography, not data.
+
+## Choose Remotion if any of these are true
+
+1. The shot is data-driven.
+2. The shot repeats many structured items.
+3. The shot is a template.
+4. The shot is driven by props.
+5. The shot benefits from React components.
+6. The shot needs many variants from one structure.
+7. The shot’s difficulty is structure, not choreography.
+
+## Decision matrix
+
+| Condition | Prefer |
+|---|---|
+| Complex GSAP choreography | HyperFrames |
+| Kinetic type | HyperFrames |
+| Custom DOM/SVG art direction | HyperFrames |
+| Repeated React rows/cards | Remotion |
+| Data-driven props | Remotion |
+| Template variants | Remotion |
+| Timeline-heavy motion | HyperFrames |
+| Component-heavy structure | Remotion |
+| Deterministic parametric layout | Remotion |
+| Cinematic camera-like transforms | HyperFrames |
+
+## Tie-breakers
+
+If both are plausible:
+
+1. If the shot needs expressive timeline control, choose HyperFrames.
+2. If the shot needs parametric reuse, choose Remotion.
+3. If the shot is one-off and art-directed, choose HyperFrames.
+4. If the shot will be repeated with changing content, choose Remotion.
+
+## Forbidden reasons
+
+Do not choose a runtime because:
+
+- it seems newer
+- it is more fun
+- it is easier to guess
+- it avoids reading the spec
+
+## Runtime boundaries
+
+HyperFrames owns:
+
+- GSAP choreography
+- DOM/SVG scene construction
+- frame seeking
+- headless capture
+
+Remotion owns:
+
+- React composition
+- frame interpolation
+- props-driven rendering
+- deterministic component trees
+
+Do not mix them in one scene unless an explicit adapter is required.
+
+
+───
+
+skills/reference-analysis.md
+
+md
+# Reference Analysis
+
+This skill defines how a stronger vision/reasoning model should analyze references before implementation.
+
+The coding model should not be assumed to be the best visual reasoner.
+
+## Input types
+
+Supported inputs:
+
+- screenshot
+- image
+- short video
+- storyboard
+- text description
+
+## Output file
+
+Write the result to:
+
+```text
+projects/&lt;project&gt;/references/analysis-&lt;shot&gt;.md
+
+Required Markdown format
+md
+# Reference Analysis: &lt;shot-id&gt;
+
+<br>
+
+## Source
+
+<br>
+
+- reference path:
+- type:
+- purpose:
+
+<br>
+
+## Visual Decomposition
+
+<br>
+
+- focal point:
+- secondary elements:
+- tertiary elements:
+- environment:
+- negative space:
+
+<br>
+
+## Composition
+
+<br>
+
+- framing:
+- alignment:
+- hierarchy:
+- balance:
+- safe margins:
+
+<br>
+
+## Color System
+
+<br>
+
+- background:
+- primary:
+- secondary:
+- accent:
+- contrast strategy:
+
+<br>
+
+## Typography
+
+<br>
+
+- headline behavior:
+- support behavior:
+- tracking:
+- weight hierarchy:
+- legibility constraints:
+
+<br>
+
+## Motion Analysis
+
+<br>
+
+- primary motion:
+- secondary motion:
+- environmental motion:
+- camera behavior:
+- transitions:
+
+<br>
+
+## Timing Analysis
+
+<br>
+
+- estimated fps:
+- estimated duration:
+- major beats:
+- holds:
+- stagger strategy:
+
+<br>
+
+## Translation Constraints
+
+<br>
+
+- must keep:
+- must avoid:
+- uncertainty:
+
+<br>
+
+## Recommended ShotSpec Mapping
+
+<br>
+
+- runtime:
+- elements:
+- sequence:
+- easing:
+- negative instructions:
+
+Rules
+1. Do not rewrite the repository.
+2. Do not output implementation code as the primary artifact.
+3. Produce a structured analysis that OpenCode can implement.
+4. Prefer observable visual facts over vague adjectives.
+5. If timing is uncertain, give ranges.
+6. If references conflict, state the conflict.
+<br>
+
+---
+
+<br>
+
+## `skills/validation.md`
+
+<br>
+
+```md
+# Validation
+
+Validation happens in three layers.
+
+## 1. Deterministic validation
+
+Automated checks:
+
+- shot spec schema validity
+- allowed fps
+- positive duration
+- even dimensions
+- existing implementation entry
+- existing Remotion composition
+- asset existence
+- font declaration
+- sequence target existence
+- forbidden randomness
+- duplicate primitives
+- broken imports
+
+Command:
+
+```bash
+npm run validate -- --project &lt;project&gt;
+
+2. Visual validation
+Semi-automated:
+• preview video
+• contact sheet
+• ffprobe metadata
+• frame range inspection
+Command:
+bash
+npm run inspect -- --project &lt;project&gt; --shot &lt;shot&gt;
+
+Visual validation cannot prove quality.
+It only helps humans and vision models review the result.
+3. Human validation
+The human checks:
+• taste
+• pacing
+• hierarchy
+• legibility
+• emotional intent
+• brand fit
+Motion quality checklist
+Before declaring a shot complete, check:
+Composition
+• clear focal point
+• correct hierarchy
+• no accidental alignment collisions
+• enough negative space
+• balanced weight
+Animation
+• anticipation where needed
+• non-uniform timing
+• correct easing category
+• controlled overshoot
+• visible settle where needed
+• overlap and follow-through
+• no accidental synchronization
+Typography
+• readable size
+• correct tracking
+• clear hierarchy
+• entrance timing supports reading order
+• no awkward line breaks
+Camera
+• movement is motivated
+• depth is coherent
+• parallax is subtle
+• no unstable drift
+Effects
+• effects serve hierarchy
+• glow is restrained
+• blur is restrained
+• grain is subtle
+• no random noise
+Technical
+• fps correct
+• resolution correct
+• duration correct
+• assets exist
+• no forbidden randomness
+• render succeeds
+<br>
+
+---
+
+<br>
+
+# F. TypeScript Architecture
+
+<br>
+
+## `motion/spec/shot-spec.ts`
+
+<br>
+
+```ts
+import { z } from "zod";
+
+export const RuntimeSchema = z.enum(["hyperframes", "remotion"]);
+
+export const EasingNameSchema = z.enum([
+  "linear",
+  "smooth",
+  "sharp",
+  "elastic",
+  "overshoot",
+  "mechanical",
+  "cinematic",
+  "organic"
+]);
+
+export type EasingName = z.infer<typeof EasingNameSchema>;
+
+export const Vec2Schema = z.object({
+  x: z.number(),
+  y: z.number()
+});
+
+export const ColorTokenSchema = z.object({
+  name: z.string(),
+  value: z.string().regex(/^#([0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$`/i)
+});
+
+export const TypographySpecSchema = z.object({
+  id: z.string(),
+  text: z.string(),
+  fontFamily: z.string(),
+  weight: z.union([z.number(), z.string()]),
+  size: z.number(),
+  tracking: z.number().optional(),
+  lineHeight: z.number().optional(),
+  color: z.string(),
+  align: z.enum(["left", "center", "right"]).optional(),
+  maxWidth: z.number().optional(),
+  x: z.number(),
+  y: z.number(),
+  width: z.number().optional(),
+  opacity: z.number().optional()
+});
+
+export const ElementSpecSchema = z.object({
+  id: z.string(),
+  kind: z.enum(["text", "shape", "image", "group", "video", "svg"]),
+  textId: z.string().optional(),
+  src: z.string().optional(),
+  shape: z.enum(["rect", "circle", "line"]).optional(),
+  x: z.number().optional(),
+  y: z.number().optional(),
+  width: z.number().optional(),
+  height: z.number().optional(),
+  color: z.string().optional(),
+  opacity: z.number().optional(),
+  layer: z.number().optional(),
+  cornerRadius: z.number().optional(),
+  notes: z.string().optional()
+});
+
+export const SequenceStepSchema = z.object({
+  id: z.string(),
+  target: z.string(),
+  action: z.enum([
+    "enter",
+    "exit",
+    "move",
+    "camera",
+    "effect",
+    "transition",
+    "hold"
+  ]),
+  atFrame: z.number().int().nonnegative(),
+  durationFrames: z.number().int().positive(),
+  ease: EasingNameSchema,
+  params: z.record(z.unknown()).optional()
+});
+
+export const TransitionSpecSchema = z.object({
+  id: z.string(),
+  atFrame: z.number().int().nonnegative(),
+  durationFrames: z.number().int().positive(),
+  type: z.string(),
+  target: z.string(),
+  ease: EasingNameSchema,
+  params: z.record(z.unknown()).optional()
+});
+
+export const EffectSpecSchema = z.object({
+  id: z.string(),
+  target: z.string(),
+  type: z.string(),
+  atFrame: z.number().int().nonnegative(),
+  durationFrames: z.number().int().positive(),
+  params: z.record(z.unknown()).optional()
+});
+
+export const CameraSpecSchema = z.object({
+  enabled: z.boolean(),
+  movement: z.enum([
+    "none",
+    "push",
+    "pull",
+    "drift",
+    "shake",
+    "orbit",
+    "focus-shift"
+  ]).optional(),
+  intensity: z.number().min(0).max(1).optional(),
+  notes: z.string().optional()
+});
+
+export const SoundHookSchema = z.object({
+  id: z.string(),
+  frame: z.number().int().nonnegative(),
+  label: z.string(),
+  notes: z.string().optional()
+});
+
+export const NegativeInstructionSchema = z.object({
+  rule: z.string(),
+  reason: z.string()
+});
+
+export const AssetRefSchema = z.object({
+  id: z.string(),
+  type: z.enum(["image", "video", "svg", "audio", "font", "reference"]),
+  path: z.string(),
+  required: z.boolean().optional(),
+  notes: z.string().optional()
+});
+
+export const ExpectedOutputSchema = z.object({
+  codec: z.string().optional(),
+  container: z.string().optional(),
+  alpha: z.boolean().optional(),
+  frameRange: z
+    .object({
+      start: z.number().int().nonnegative(),
+      end: z.number().int().nonnegative()
+    })
+    .optional(),
+  notes: z.string().optional()
+});
+
+export const ImplementationSchema = z
+  .object({
+    sceneId: z.string().optional(),
+    compositionId: z.string().optional(),
+    entry: z.string().optional(),
+    props: z.record(z.unknown()).optional()
+  })
+  .strict();
+
+export const ShotSpecSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    project: z.string(),
+    id: z.string(),
+    version: z.number().int().positive().default(1),
+    runtime: RuntimeSchema,
+    durationFrames: z.number().int().positive(),
+    fps: z.number().int().positive(),
+    width: z.number().int().positive(),
+    height: z.number().int().positive(),
+    seed: z.number().int().optional().default(12345),
+    purpose: z.string(),
+    composition: z
+      .object({
+        focalPoint: Vec2Schema.optional(),
+        hierarchy: z.array(z.string()).optional(),
+        safeMarginPercent: z.number().optional(),
+        notes: z.string().optional()
+      })
+      .optional(),
+    colors: z.array(ColorTokenSchema).optional(),
+    typography: z.array(TypographySpecSchema).optional(),
+    elements: z.array(ElementSpecSchema).optional(),
+    sequence: z.array(SequenceStepSchema).min(1),
+    transitions: z.array(TransitionSpecSchema).optional(),
+    effects: z.array(EffectSpecSchema).optional(),
+    camera: CameraSpecSchema.optional(),
+    soundHooks: z.array(SoundHookSchema).optional(),
+    assets: z.array(AssetRefSchema).optional(),
+    constraints: z.array
+
+
+motion/core/frames.ts
+
+ts
+export function clamp01(value: number): number {
+  return value < 0 ? 0 : value > 1 ? 1 : value;
+}
+
+export function framesToSeconds(frames: number, fps: number): number {
+  if (fps <= 0) throw new Error("fps must be greater than 0");
+  return frames / fps;
+}
+
+export function secondsToFrames(seconds: number, fps: number): number {
+  if (fps <= 0) throw new Error("fps must be greater than 0");
+  return Math.round(seconds * fps);
+}
+
+export function normalizedProgress(
+  frame: number,
+  startFrame: number,
+  durationFrames: number
+): number {
+  if (durationFrames <= 0) return 1;
+  return clamp01((frame - startFrame) / durationFrames);
+}
+
+
+motion/core/interpolate.ts
+
+ts
+import { clamp01 } from "./frames";
+
+export interface InterpolateOptions {
+  clamp?: boolean;
+}
+
+export function interpolate(
+  frame: number,
+  input: [number, number],
+  output: [number, number],
+  options: InterpolateOptions = {}
+): number {
+  const [inStart, inEnd] = input;
+  const [outStart, outEnd] = output;
+
+  if (inEnd === inStart) return outStart;
+
+  let t = (frame - inStart) / (inEnd - inStart);
+
+  if (options.clamp !== false) {
+    t = clamp01(t);
+  }
+
+  return outStart + t * (outEnd - outStart);
+}
+
+
+motion/core/stagger.ts
+
+ts
+export interface StaggerOptions {
+  count: number;
+  startFrame: number;
+  staggerFrames: number;
+}
+
+export function staggerStartFrame(
+  index: number,
+  options: StaggerOptions
+): number {
+  if (index < 0 || index >= options.count) {
+    throw new Error("stagger index out of range");
+  }
+
+  return options.startFrame + index * options.staggerFrames;
+}
+
+
+motion/core/rng.ts
+
+ts
+export function seededRandom(seed: number): () => number {
+  let a = seed >>> 0;
+
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export function pickSeeded<T>(rng: () => number, items: T[]): T {
+  if (items.length === 0) throw new Error("items must not be empty");
+  return items[Math.floor(rng() * items.length)];
+}
+
+
+motion/core/spring.ts
+
+ts
+export interface SpringConfig {
+  stiffness?: number;
+  damping?: number;
+  mass?: number;
+}
+
+export interface SpringOptions {
+  fps: number;
+  startFrame: number;
+  from: number;
+  to: number;
+  config?: SpringConfig;
+}
+
+export function springValue(frame: number, options: SpringOptions): number {
+  const { fps, startFrame, from, to } = options;
+  const stiffness = options.config?.stiffness ?? 120;
+  const damping = options.config?.damping ?? 14;
+  const mass = options.config?.mass ?? 1;
+
+  if (frame <= startFrame) return from;
+
+  const steps = Math.floor(frame - startFrame);
+  const dt = 1 / fps;
+
+  let x = from;
+  let v = 0;
+
+  for (let i = 0; i < steps; i++) {
+    const springForce = -stiffness * (x - to);
+    const damperForce = -damping * v;
+    const acceleration = (springForce + damperForce) / mass;
+
+    v += acceleration * dt;
+    x += v * dt;
+  }
+
+  return x;
+}
+
+
+motion/easing/index.ts
+
+ts
+import type { EasingName } from "../spec/shot-spec";
+
+export const GSAP_EASE: Record<EasingName, string> = {
+  linear: "none",
+  smooth: "power2.inOut",
+  sharp: "power4.out",
+  elastic: "elastic.out(1,0.6)",
+  overshoot: "back.out(2.2)",
+  mechanical: "steps(12)",
+  cinematic: "power3.inOut",
+  organic: "sine.inOut"
+};
+
+export const EASING_FUNCTIONS: Record<EasingName, (t: number) => number> = {
+  linear: (t) => t,
+  smooth: (t) => t * t * (3 - 2 * t),
+  sharp: (t) => 1 - Math.pow(1 - t, 4),
+  elastic: (t) => {
+    if (t === 0 || t === 1) return t;
+    const p = 0.3;
+    return Math.pow(2, -10 * t) * Math.sin(((t - p / 4) * (2 * Math.PI)) / p) + 1;
+  },
+  overshoot: (t) => {
+    const s = 1.70158;
+    const u = t - 1;
+    return u * u * ((s + 1) * u + s) + 1;
+  },
+  mechanical: (t) => Math.floor(t * 12) / 12,
+  cinematic: (t) =>
+    t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
+  organic: (t) => 0.5 - 0.5 * Math.cos(Math.PI * t)
+};
+
+
+motion/text/char-reveal.ts
+
+ts
+import gsap from "gsap";
+import { framesToSeconds } from "../core/frames";
+import { GSAP_EASE } from "../easing";
+import type { EasingName } from "../spec/shot-spec";
+
+export interface CharRevealOptions {
+  text: string;
+  fps: number;
+  startFrame: number;
+  staggerFrames?: number;
+  durationPerCharFrames?: number;
+  ease?: EasingName;
+  y?: number;
+  opacity?: number;
+}
+
+export function splitTextIntoChars(
+  root: HTMLElement,
+  text: string
+): HTMLSpanElement[] {
+  root.textContent = "";
+
+  const chars: HTMLSpanElement[] = [];
+
+  for (const ch of text) {
+    const span = document.createElement("span");
+    span.textContent = ch;
+    span.style.display = "inline-block";
+    span.style.whiteSpace = "pre";
+    root.appendChild(span);
+    chars.push(span);
+  }
+
+  return chars;
+}
+
+export function charRevealTimeline(
+  root: HTMLElement,
+  options: CharRevealOptions
+): gsap.core.Timeline {
+  const chars = splitTextIntoChars(root, options.text);
+
+  const tl = gsap.timeline({ paused: true });
+
+  const duration = framesToSeconds(
+    options.durationPerCharFrames ?? 8,
+    options.fps
+  );
+
+  const stagger = framesToSeconds(options.staggerFrames ?? 2, options.fps);
+  const ease = GSAP_EASE[options.ease ?? "smooth"];
+
+  chars.forEach((span, i) => {
+    tl.fromTo(
+      span,
+      {
+        opacity: options.opacity ?? 0,
+        y: options.y ?? 18
+      },
+      {
+        opacity: 1,
+        y: 0,
+        duration,
+        ease
+      },
+      framesToSeconds(options.startFrame, options.fps) + i * stagger
+    );
+  });
+
+  return tl;
+}
+
+
+───
+
+G. HyperFrames Implementation
+
+hyperframes/core/types.ts
+
+ts
+export interface HFMeta {
+  id: string;
+  width: number;
+  height: number;
+  fps: number;
+  durationFrames: number;
+}
+
+export interface HFConfig {
+  seed: number;
+  assetsBase: string;
+}
+
+export interface HFContext {
+  root: HTMLElement;
+  meta: HFMeta;
+  config: HFConfig;
+}
+
+export interface HFController {
+  seek(frame: number): void;
+}
+
+export interface HFSceneDefinition {
+  meta: HFMeta;
+  create(ctx: HFContext): Promise<HFController> | HFController;
+}
+
+
+hyperframes/core/dom.ts
+
+ts
+export function el<K extends keyof HTMLElementTagNameMap>(
+  tag: K,
+  styles: Partial<CSSStyleDeclaration> = {},
+  attrs: Record<string, string> = {}
+): HTMLElementTagNameMap[K] {
+  const node = document.createElement(tag);
+
+  Object.assign(node.style, styles);
+
+  for (const [key, value] of Object.entries(attrs)) {
+    node.setAttribute(key, value);
+  }
+
+  return node;
+}
+
+export function abs(
+  styles: Partial<CSSStyleDeclaration> = {}
+): Partial<CSSStyleDeclaration> {
+  return {
+    position: "absolute",
+    top: "0",
+    left: "0",
+    ...styles
+  };
+}
+
+
+hyperframes/core/runtime.ts
+
+ts
+import type { HFSceneDefinition } from "./types";
+
+declare global {
+  interface Window {
+    __HF_CONFIG__?: {
+      seed?: number;
+      assetsBase?: string;
+    };
+    __HF_READY__?: boolean;
+    __HF_SEEK__?: (frame: number) => void;
+  }
+}
+
+export async function registerScene(def: HFSceneDefinition): Promise<void> {
+  const root = document.getElementById("hf-root");
+
+  if (!root) {
+    throw new Error("Missing #hf-root element");
+  }
+
+  root.style.width = ``${def.meta.width}px`;
+  root.style.height = `$`{def.meta.height}px`;
+  root.style.overflow = "hidden";
+  root.style.position = "relative";
+  root.style.background = "#000";
+
+  const config = {
+    seed: window.__HF_CONFIG__?.seed ?? 12345,
+    assetsBase: window.__HF_CONFIG__?.assetsBase ?? ""
+  };
+
+  try {
+    await (document as any).fonts?.ready;
+  } catch {
+    // Font API may not be available in all environments.
+  }
+
+  const controller = await def.create({
+    root,
+    meta: def.meta,
+    config
+  });
+
+  window.__HF_SEEK__ = (frame: number) => {
+    controller.seek(frame);
+  };
+
+  window.__HF_READY__ = true;
+}
+
+
+hyperframes/core/host.html
+
+html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>HyperFrames Host</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #000;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="hf-root"></div>
+    <script src="./bundle.js"></script>
+  </body>
+</html>
+
+
+hyperframes/scenes/example-signal-opening/entry.ts
+
+ts
+import { registerScene } from "../../core/runtime";
+import { scene } from "./scene";
+
+registerScene(scene);
+
+
+hyperframes/scenes/example-signal-opening/scene.ts
+
+ts
+import gsap from "gsap";
+import type {
+  HFContext,
+  HFController,
+  HFSceneDefinition
+} from "../../core/types";
+import { el, abs } from "../../core/dom";
+import { framesToSeconds } from "../../../motion/core/frames";
+import { seededRandom } from "../../../motion/core/rng";
+import { charRevealTimeline } from "../../../motion/text/char-reveal";
+
+export const meta = {
+  id: "example-signal-opening",
+  width: 1920,
+  height: 1080,
+  fps: 30,
+  durationFrames: 300
+};
+
+export const scene: HFSceneDefinition = {
+  meta,
+  create(ctx: HFContext): HFController {
+    const s = (frames: number) => framesToSeconds(frames, meta.fps);
+    const rng = seededRandom(ctx.config.seed);
+
+    ctx.root.innerHTML = "";
+
+    const camera = el(
+      "div",
+      abs({
+        width: "100%",
+        height: "100%",
+        transformOrigin: "50% 50%",
+        willChange: "transform"
+      })
+    );
+
+    const background = el(
+      "div",
+      abs({
+        width: "100%",
+        height: "100%",
+        background:
+          "radial-gradient(circle at 30% 25%, #101826 0%, #07090c 55%, #040507 100%)",
+        opacity: "0"
+      })
+    );
+
+    const grid = el(
+      "div",
+      abs({
+        width: "100%",
+        height: "100%",
+        opacity: "0",
+        backgroundImage:
+          "linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)",
+        backgroundSize: "120px 120px",
+        transform: "translateY(40px)"
+      })
+    );
+
+    const environment = el(
+      "div",
+      abs({
+        width: "100%",
+        height: "100%"
+      })
+    );
+
+    const content = el(
+      "div",
+      abs({
+        width: "100%",
+        height: "100%"
+      })
+    );
+
+    const title = el(
+      "div",
+      abs({
+        left: "120px",
+        top: "390px",
+        font: "700 128px Arial, sans-serif",
+        color: "#f5f7fa",
+        letterSpacing: "-2px",
+        whiteSpace: "nowrap",
+        transformOrigin: "left center",
+        willChange: "transform"
+      })
+    );
+    title.textContent = "MOTION FACTORY";
+
+    const support = el(
+      "div",
+      abs({
+        left: "126px",
+        top: "560px",
+        font: "400 44px Arial, sans-serif",
+        color: "rgba(214, 224, 235, 0.92)",
+        letterSpacing: "0.5px",
+        maxWidth: "1100px"
+      })
+    );
+
+    const underline = el(
+      "div",
+      abs({
+        left: "128px",
+        top: "535px",
+        width: "520px",
+        height: "6px",
+        background: "#ff5d3a",
+        transform: "scaleX(0)",
+        transformOrigin: "left center"
+      })
+    );
+
+    const panel = el(
+      "div",
+      abs({
+        left: "1120px",
+        top: "690px",
+        width: "620px",
+        padding: "28px",
+        background: "rgba(9, 13, 18, 0.84)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: "12px",
+        opacity: "0"
+      })
+    );
+
+    const barTrack = () =>
+      el("div", {
+        width: "100%",
+        height: "10px",
+        background: "rgba(255,255,255,0.08)",
+        borderRadius: "999px",
+        overflow: "hidden",
+        marginTop: "14px",
+        marginBottom: "24px"
+      });
+
+    const barFill = (width: number, color: string) =>
+      el("div", {
+        width: ``${width}%`,
+        height: "100%",
+        background: color,
+        transform: "scaleX(0)",
+        transformOrigin: "left center"
+      });
+
+    const label = (text: string) => {
+      const node = el("div", {
+        font: "600 24px Arial, sans-serif",
+        color: "rgba(235,240,246,0.9)"
+      });
+      node.textContent = text;
+      return node;
+    };
+
+    panel.appendChild(label("SPEC COVERAGE"));
+    const track1 = barTrack();
+    const fill1 = barFill(86, "#ff5d3a");
+    track1.appendChild(fill1);
+    panel.appendChild(track1);
+
+    panel.appendChild(label("DETERMINISM"));
+    const track2 = barTrack();
+    const fill2 = barFill(98, "#4da3ff");
+    track2.appendChild(fill2);
+    panel.appendChild(track2);
+
+    panel.appendChild(label("REUSE"));
+    const track3 = barTrack();
+    const fill3 = barFill(74, "#65e0a8");
+    track3.appendChild(fill3);
+    panel.appendChild(track3);
+
+    const wipe = el(
+      "div",
+      abs({
+        width: "100%",
+        height: "100%",
+        background: "linear-gradient(90deg, #ff5d3a 0%, #10151c 100%)",
+        transform: "scaleX(0)",
+        transformOrigin: "left center"
+      })
+    );
+
+    camera.appendChild(background);
+    camera.appendChild(grid);
+    camera.appendChild(environment);
+    camera.appendChild(content);
+    camera.appendChild(wipe);
+
+    content.appendChild(title);
+    content.appendChild(underline);
+    content.appendChild(support);
+    content.appendChild(panel);
+
+    ctx.root.appendChild(camera);
+
+    const particles: HTMLElement[] = [];
+
+    for (let i = 0; i < 18; i++) {
+      const size = 2 + rng() * 4;
+      const x = rng() * meta.width;
+      const y = rng() * meta.height;
+
+      const dot = el("div", {
+        position: 
+
+
+───
+
+H. Remotion Implementation
+
+remotion/registry.ts
+
+ts
+export interface RemotionCompositionRef {
+  id: string;
+  file: string;
+  description?: string;
+}
+
+export const REMOTION_COMPOSITIONS: RemotionCompositionRef[] = [
+  {
+    id: "ExampleMetrics",
+    file: "remotion/compositions/ExampleMetrics.tsx",
+    description: "Data-driven metrics panel"
+  }
+];
+
+
+remotion/index.ts
+
+ts
+import { registerRoot } from "remotion";
+import { RemotionRoot } from "./Root";
+
+registerRoot(RemotionRoot);
+
+
+remotion/Root.tsx
+
+tsx
+import React from "react";
+import { Composition } from "remotion";
+import {
+  ExampleMetrics,
+  exampleMetricsMeta,
+  exampleMetricsDefaultProps
+} from "./compositions/ExampleMetrics";
+
+export const RemotionRoot: React.FC = () => {
+  return (
+    <Composition
+      id={exampleMetricsMeta.id}
+      component={ExampleMetrics}
+      durationInFrames={exampleMetricsMeta.durationInFrames}
+      fps={exampleMetricsMeta.fps}
+      width={exampleMetricsMeta.width}
+      height={exampleMetricsMeta.height}
+      defaultProps={exampleMetricsDefaultProps}
+    />
+  );
+};
+
+
+remotion/components/MetricRow.tsx
+
+tsx
+import React from "react";
+import { interpolate, spring, useCurrentFrame, useVideoConfig } from "remotion";
+
+export interface MetricRowProps {
+  label: string;
+  value: number;
+  color: string;
+}
+
+export const MetricRow: React.FC<MetricRowProps> = ({
+  label,
+  value,
+  color
+}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  const progress = spring({
+    frame,
+    fps,
+    config: {
+      damping: 200
+    },
+    durationInFrames: 40
+  });
+
+  const opacity = interpolate(progress, [0, 0.25], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp"
+  });
+
+  const y = interpolate(progress, [0, 1], [24, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp"
+  });
+
+  const maxWidth = 900;
+  const width = interpolate(value, [0, 100], [0, maxWidth], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp"
+  });
+
+  return (
+    <div
+      style={{
+        opacity,
+        transform: `translateY($`{y}px)`,
+        marginBottom: 42
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginBottom: 10,
+          font: "600 30px Arial, sans-serif",
+          color: "rgba(235,240,246,0.92)"
+        }}
+      >
+        <span>{label}</span>
+        <span>{value}</span>
+      </div>
+
+      <div
+        style={{
+          width: maxWidth,
+          height: 12,
+          borderRadius: 999,
+          background: "rgba(255,255,255,0.08)",
+          overflow: "hidden"
+        }}
+      >
+        <div
+          style={{
+            width: width * progress,
+            height: "100%",
+            borderRadius: 999,
+            background: color
+          }}
+        />
+      </div>
+    </div>
+  );
+};
+
+
+remotion/compositions/ExampleMetrics.tsx
+
+tsx
+import React from "react";
+import {
+  AbsoluteFill,
+  Sequence,
+  interpolate,
+  spring,
+  useCurrentFrame,
+  useVideoConfig
+} from "remotion";
+import { MetricRow } from "../components/MetricRow";
+
+export const exampleMetricsMeta = {
+  id: "ExampleMetrics",
+  width: 1920,
+  height: 1080,
+  fps: 30,
+  durationInFrames: 150
+};
+
+export interface ExampleMetric {
+  label: string;
+  value: number;
+  color: string;
+}
+
+export interface ExampleMetricsProps {
+  title: string;
+  metrics: ExampleMetric[];
+}
+
+export const exampleMetricsDefaultProps: ExampleMetricsProps = {
+  title: "SYSTEM OUTPUT",
+  metrics: [
+    { label: "SPEC COVERAGE", value: 86, color: "#ff5d3a" },
+    { label: "DETERMINISM", value: 98, color: "#4da3ff" },
+    { label: "REUSE", value: 74, color: "#65e0a8" }
+  ]
+};
+
+export const ExampleMetrics: React.FC<ExampleMetricsProps> = ({
+  title,
+  metrics
+}) => {
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+
+  const titleProgress = spring({
+    frame: Math.max(0, frame - 4),
+    fps,
+    config: {
+      damping: 200
+    },
+    durationInFrames: 34
+  });
+
+  const titleOpacity = interpolate(titleProgress, [0, 0.35], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp"
+  });
+
+  const titleY = interpolate(titleProgress, [0, 1], [28, 0], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp"
+  });
+
+  return (
+    <AbsoluteFill
+      style={{
+        background:
+          "radial-gradient(circle at 20% 20%, #111823 0%, #07090c 60%, #040507 100%)",
+        padding: 120,
+        justifyContent: "center"
+      }}
+    >
+      <div
+        style={{
+          opacity: titleOpacity,
+          transform: `translateY(`${titleY}px)`,
+          font: "700 84px Arial, sans-serif",
+          color: "#f5f7fa",
+          letterSpacing: "-1px",
+          marginBottom: 60
+        }}
+      >
+        {title}
+      </div>
+
+      {metrics.map((metric, index) => (
+        <Sequence key={metric.label} from={36 + index * 10}>
+          <MetricRow
+            label={metric.label}
+            value={metric.value}
+            color={metric.color}
+          />
+        </Sequence>
+      ))}
+    </AbsoluteFill>
+  );
+};
+
+
+Why this belongs in Remotion
+
+This scene belongs in Remotion because:
+
+• it is data-driven
+• it repeats structured rows
+• it benefits from React mapping
+• it is template-like
+• its complexity is structural, not choreographic
+• props can change content without changing scene code
+
+If the same shot required aggressive kinetic type, impact compression, and layered GSAP choreography, it would belong in HyperFrames instead.
+
+───
+
+I. CLI / Scripts
+
+Below are the actual script implementations.
+
+scripts/lib/args.ts
+
+ts
+export interface CliOptions {
+  [key: string]: string | boolean;
+}
+
+export function parseArgs(argv: string[]): CliOptions {
+  const opts: CliOptions = {};
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+
+    if (!arg.startsWith("--")) continue;
+
+    const key = arg.slice(2);
+    const next = argv[i + 1];
+
+    if (next === undefined || next.startsWith("--")) {
+      opts[key] = true;
+    } else {
+      opts[key] = next;
+      i++;
+    }
+  }
+
+  return opts;
+}
+
+export function required(opts: CliOptions, key: string): string {
+  const value = opts[key];
+
+  if (typeof value !== "string" || value.length === 0) {
+    throw new Error(`Missing required --$`{key}`);
+  }
+
+  return value;
+}
+
+
+scripts/lib/paths.ts
+
+ts
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+export const ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../.."
+);
+
+export const PROJECTS = path.join(ROOT, "projects");
+export const HYPERFRAMES_SCENES = path.join(ROOT, "hyperframes", "scenes");
+export const REMOTION_ROOT = path.join(ROOT, "remotion");
+export const TMP = path.join(ROOT, ".tmp");
+
+export function projectDir(project: string): string {
+  return path.join(PROJECTS, project);
+}
+
+export function specsDir(project: string): string {
+  return path.join(projectDir(project), "specs");
+}
+
+export function assetsDir(project: string): string {
+  return path.join(projectDir(project), "assets");
+}
+
+export function previewsDir(project: string): string {
+  return path.join(projectDir(project), "previews");
+}
+
+export function rendersDir(project: string): string {
+  return path.join(projectDir(project), "renders");
+}
+
+export function metadataDir(project: string): string {
+  return path.join(projectDir(project), "metadata");
+}
+
+
+scripts/lib/files.ts
+
+ts
+import fs from "node:fs";
+import path from "node:path";
+
+export function ensureDir(dir: string): void {
+  fs.mkdirSync(dir, { recursive: true });
+}
+
+export function walk(dir: string, extensions?: string[]): string[] {
+  if (!fs.existsSync(dir)) return [];
+
+  const results: string[] = [];
+
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      results.push(...walk(fullPath, extensions));
+    } else {
+      if (!extensions) {
+        results.push(fullPath);
+        continue;
+      }
+
+      if (extensions.some((ext) => fullPath.endsWith(ext))) {
+        results.push(fullPath);
+      }
+    }
+  }
+
+  return results;
+}
+
+
+scripts/lib/exec.ts
+
+ts
+import { spawnSync } from "node:child_process";
+
+export function run(command: string, args: string[]): void {
+  const result = spawnSync(command, args, {
+    stdio: "inherit",
+    shell: process.platform === "win32"
+  });
+
+  if (result.status !== 0) {
+    throw new Error(`Command failed: `${command} $`{args.join(" ")}`);
+  }
+}
+
+export function output(command: string, args: string[]): string {
+  const result = spawnSync(command, args, {
+    encoding: "utf8",
+    shell: process.platform === "win32"
+  });
+
+  if (result.status !== 0) {
+    throw new Error(
+      `Command failed: `${command} $`{args.join(" ")}\n`${result.stderr}`
+    );
+  }
+
+  return result.stdout;
+}
+
+
+scripts/lib/spec.ts
+
+ts
+import fs from "node:fs";
+import path from "node:path";
+import YAML from "yaml";
+import { ShotSpecSchema, type ShotSpec } from "../../motion/spec/shot-spec";
+import { specsDir } from "./paths";
+
+export function loadSpec(project: string, shot: string): ShotSpec {
+  const file = path.join(specsDir(project), `$`{shot}.yaml`);
+
+  if (!fs.existsSync(file)) {
+    throw new Error(`Spec not found: `${file}`);
+  }
+
+  return loadSpecFile(file);
+}
+
+export function loadSpecFile(file: string): ShotSpec {
+  const raw = fs.readFileSync(file, "utf8");
+  const parsed = YAML.parse(raw);
+  return ShotSpecSchema.parse(parsed);
+}
+
+
+scripts/create-project.ts
+
+ts
+import fs from "node:fs";
+import path from "node:path";
+import { PROJECTS } from "./lib/paths";
+import { ensureDir } from "./lib/files";
+
+function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$`/g, "");
+}
+
+const projectName = process.argv[2];
+
+if (!projectName) {
+  throw new Error("Usage: npm run create-project <project-name>");
+}
+
+const slug = slugify(projectName);
+const dir = path.join(PROJECTS, slug);
+
+if (fs.existsSync(dir)) {
+  throw new Error(`Project already exists: `${dir}`);
+}
+
+const dirs = [
+  "references",
+  "specs",
+  "scenes",
+  "assets",
+  "assets/fonts",
+  "assets/images",
+  "previews",
+  "renders",
+  "metadata"
+];
+
+ensureDir(dir);
+
+for (const sub of dirs) {
+  ensureDir(path.join(dir, sub));
+}
+
+fs.writeFileSync(
+  path.join(dir, "previews", ".gitkeep"),
+  "",
+  "utf8"
+);
+
+fs.writeFileSync(
+  path.join(dir, "renders", ".gitkeep"),
+  "",
+  "utf8"
+);
+
+fs.writeFileSync(
+  path.join(dir, "project.md"),
+  `# $`{slug}
+
+## Objective
+
+Describe the purpose of this project here.
+
+## Style
+
+Describe the visual style here.
+
+## Constraints
+
+- fps: 30
+- resolution: 1920x1080
+- local assets only
+`,
+  "utf8"
+);
+
+fs.writeFileSync(
+  path.join(dir, "metadata", "project.yaml"),
+  `schemaVersion: 1
+project: `${slug}
+createdAt: $`{new Date().toISOString()}
+defaults:
+  fps: 30
+  width: 1920
+  height: 1080
+`,
+  "utf8"
+);
+
+fs.writeFileSync(
+  path.join(dir, "metadata", "decisions.md"),
+  `# Decisions
+
+Record important implementation decisions here.
+`,
+  "utf8"
+);
+
+console.log(`Created project: `${dir}`);
+
+
+scripts/list-scenes.ts
+
+ts
+import fs from "node:fs";
+import path from "node:path";
+import { HYPERFRAMES_SCENES } from "./lib/paths";
+import { REMOTION_COMPOSITIONS } from "../../remotion/registry";
+
+console.log("HyperFrames scenes:");
+
+if (fs.existsSync(HYPERFRAMES_SCENES)) {
+  const entries = fs.readdirSync(HYPERFRAMES_SCENES, {
+    withFileTypes: true
+  });
+
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+
+    const entryFile = path.join(HYPERFRAMES_SCENES, entry.name, "entry.ts");
+
+    if (fs.existsSync(entryFile)) {
+      console.log(`- $`{entry.name}`);
+    }
+  }
+}
+
+console.log("\nRemotion compositions:");
+
+for (const comp of REMOTION_COMPOSITIONS) {
+  console.log(`- `${comp.id} ($`{comp.file})`);
+}
+
+
+scripts/lib/remotion.ts
+
+ts
+import fs from "node:fs";
+import path from "node:path";
+import { TMP } from "./paths";
+import { ensureDir } from "./files";
+import { run } from "./exec";
+import type { ShotSpec } from "../../motion/spec/shot-spec";
+
+export function writeRemotionProps(
+  project: string,
+  shot: string,
+  spec: ShotSpec
+): string {
+  const dir = path.join(TMP, "remotion");
+  ensureDir(dir);
+
+  const file = path.join(dir, ``${project}-$`{shot}.props.json`);
+
+  const props = spec.implementation.props ?? {};
+
+  fs.writeFileSync(file, JSON.stringify(props, null, 2), "utf8");
+
+  return file;
+}
+
+export function renderRemotion(options: {
+  compositionId: string;
+  out: string;
+  propsFile?: string;
+  scale?: number;
+}): void {
+  const args = [
+    "remotion",
+    "render",
+    "remotion/index.ts",
+    options.compositionId,
+    options.out
+  ];
+
+  if (options.propsFile) {
+    args.push("--props", options.propsFile);
+  }
+
+  if (options.scale && options.scale !== 1) {
+    args.push("--scale", String(options.scale));
+  }
+
+  run("npx", args);
+}
+
+
+scripts/lib/hyperframes.ts
+
+ts
+import fs from "node:fs";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+import esbuild from "esbuild";
+import { chromium } from "playwright";
+import { ROOT, TMP, assetsDir, projectDir } from "./paths";
+import { ensureDir } from "./files";
+import { run } from "./exec";
+import type { ShotSpec } from "../../motion/spec/shot-spec";
+
+export interface RenderHyperframesOptions {
+  project: string;
+  shot: string;
+  spec: ShotSpec;
+  out: string;
+  scale?: number;
+  crf?: number;
+  frameStep?: number;
+  alpha?: boolean;
+}
+
+export async function renderHyperframes(
+  options: RenderHyperframesOptions
+): Promise<void> {
+  const { project, shot, spec, out } = options;
+
+  const sceneId = spec.implementation.sceneId;
+
+  if (!sceneId) {
+    throw new Error("HyperFrames spec requires implementation.sceneId");
+  }
+
+  const scale = options.scale ?? 1;
+  const crf = options.crf ?? 18;
+  const frameStep = options.frameStep ?? 1;
+
+  const entry = path.join(ROOT, "hyperframes", "scenes", sceneId, "entry.ts");
+
+  if (!fs.existsSync(entry)) {
+    throw new Error(`Missing HyperFrames entry: `${entry}`);
+  }
+
+  const workDir = path.join(TMP, "hyperframes", `$`{project}-`${shot}`);
+  const framesDir = path.join(workDir, "frames");
+
+  ensureDir(workDir);
+  ensureDir(framesDir);
+
+  for (const file of fs.readdirSync(framesDir)) {
+    fs.rmSync(path.join(framesDir, file));
+  }
+
+  const bundlePath = path.join(workDir, "bundle.js");
+
+  await esbuild.build({
+    entryPoints: [entry],
+    bundle: true,
+    outfile: bundlePath,
+    format: "iife",
+    platform: "browser",
+    target: "es2022",
+    define: {
+      "process.env.NODE_ENV": '"production"'
+    },
+    logLevel: "silent"
+  });
+
+  const html = `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+html, body { margin: 0; padding: 0; background: #000; }
+</style>
+</head>
+<body>
+<div id="hf-root"></div>
+<script>
+window.__HF_CONFIG__ = $`{JSON.stringify({
+    seed: spec.seed ?? 12345,
+    assetsBase: pathToFileURL(assetsDir(project) + path.sep).href
+  })};
+</script>
+<script src="./bundle.js"></script>
+</body>
+</html>`;
+
+  const htmlPath = path.join(workDir, "index.html");
+  fs.writeFileSync(htmlPath, html, "utf8");
+
+  const browser = await chromium.launch({
+    args: ["--allow-file-access-from-files"]
+  });
+
+  const page = await browser.newPage();
+
+  await page.setViewportSize({
+    width: Math.round(spec.width * scale),
+    height: Math.round(spec.height * scale)
+  });
+
+  await page.goto(pathToFileURL(htmlPath).href);
+
+  await page.waitForFunction(() => (window as any).__HF_READY__ === true, undefined, {
+    timeout: 60000
+  });
+
+  if (scale !== 1) {
+    await page.evaluate(
+      ({ scale }) => {
+        const root = document.getElementById("hf-root");
+        if (!root) return;
+        root.style.transform = `scale(`${scale})`;
+        root.style.transformOrigin = "top left";
+      },
+      { scale }
+    );
+  }
+
+  let outputIndex = 0;
+
+  for (let frame = 0; frame < spec.durationFrames; frame += frameStep) {
+    await page.evaluate((f) => {
+      (window as any).__HF_SEEK__?.(f);
+    }, frame);
+
+    const fileName = `$`{String(outputIndex).padStart(6, "0")}.png`;
+
+    await page.screenshot({
+      path: path.join(framesDir, fileName),
+      type: "png"
+    });
+
+    outputIndex++;
+  }
+
+  await browser.close();
+
+  const outputFps = spec.fps / frameStep;
+
+  ensureDir(path.dirname(out));
+
+  if (options.alpha) {
+    run("ffmpeg", [
+      "-y",
+      "-framerate",
+      String(outputFps),
+      "-i",
+      path.join(framesDir, "%06d.png"),
+      "-c:v",
+      "qtrle",
+      "-pix_fmt",
+      "argb",
+      out.replace(/\.(mp4|mov)`$/i, ".mov")
+    ]);
+  } else {
+    run("ffmpeg", [
+      "-y",
+      "-framerate",
+      String(outputFps),
+      "-i",
+      path.join(framesDir, "%06d.png"),
+      "-c:v",
+      "libx264",
+      "-preset",
+      "veryfast",
+      "-crf",
+      String(crf),
+      "-pix_fmt",
+      "yuv420p",
+      out
+    ]);
+  }
+}
+
+
+scripts/preview.ts
+
+ts
+import path from "node:path";
+import { parseArgs, required } from "./lib/args";
+import { loadSpec } from "./lib/spec";
+import { previewsDir } from "./lib/paths";
+import { ensureDir } from "./lib/files";
+import { renderHyperframes } from "./lib/hyperframes";
+import { renderRemotion, writeRemotionProps } from "./lib/remotion";
+
+async function main() {
+  const opts = parseArgs(process.argv.slice(2));
+  const project = required(opts, "project");
+  const shot = required(opts, "shot");
+
+  const spec = loadSpec(project, shot);
+  const out = path.join(previewsDir(project), `$`{shot}_preview.mp4`);
+
+  ensureDir(path.dirname(out));
+
+  if (spec.runtime === "hyperframes") {
+    await renderHyperframes({
+      project,
+      shot,
+      spec,
+      out,
+      scale: 0.5,
+      crf: 23,
+      frameStep: 1
+    });
+  } else {
+    const compositionId = spec.implementation.compositionId;
+
+    if (!compositionId) {
+      throw new Error("Remotion spec requires implementation.compositionId");
+    }
+
+    const propsFile = writeRemotionProps(project, shot, spec);
+
+    renderRemotion({
+      compositionId,
+      out,
+      propsFile,
+      scale: 0.5
+    });
+  }
+
+  console.log(`Preview written: `${out}`);
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
+
+
+scripts/render.ts
+
+ts
+import path from "node:path";
+import { parseArgs, required } from "./lib/args";
+import { loadSpec } from "./lib/spec";
+import { rendersDir } from "./lib/paths";
+import { ensureDir } from "./lib/files";
+import { renderHyperframes } from "./lib/hyperframes";
+import { renderRemotion, writeRemotionProps } from "./lib/remotion";
+
+async function main() {
+  const opts = parseArgs(process.argv.slice(2));
+  const project = required(opts, "project");
+  const shot = required(opts, "shot");
+  const alpha = opts.alpha === true;
+
+  const spec = loadSpec(project, shot);
+
+  const baseName = `$`{project}_`${shot}_v$`{String(spec.version ?? 1).padStart(2, "0")}_`${spec.fps}fps_$`{spec.width}x`${spec.height}`;
+
+  const outDir = path.join(rendersDir(project), shot);
+  ensureDir(outDir);
+
+  const out = path.join(outDir, `$`{baseName}.mp4`);
+
+  if (spec.runtime === "hyperframes") {
+    await renderHyperframes({
+      project,
+      shot,
+      spec,
+      out,
+      scale: 1,
+      crf: 16,
+      frameStep: 1,
+      alpha
+    });
+  } else {
+    const compositionId = spec.implementation.compositionId;
+
+    if (!compositionId) {
+      throw new Error("Remotion spec requires implementation.compositionId");
+    }
+
+    const propsFile = writeRemotionProps(project, shot, spec);
+
+    renderRemotion({
+      compositionId,
+      out,
+      propsFile,
+      scale: 1
+    });
+  }
+
+  console.log(`Render written: `${out}`);
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
+
+
+scripts/inspect.ts
+
+ts
+import fs from "node:fs";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
+import { parseArgs, required } from "./lib/args";
+import { loadSpec } from "./lib/spec";
+import { metadataDir, previewsDir } from "./lib/paths";
+import { ensureDir } from "./lib/files";
+
+function ffprobe(file: string): any {
+  const result = spawnSync(
+    "ffprobe",
+    ["-v", "error", "-print_format", "json", "-show_format", "-show_streams", file],
+    {
+      encoding: "utf8",
+      shell: process.platform === "win32"
+    }
+  );
+
+  if (result.status !== 0) {
+    throw new Error(`ffprobe failed for $`{file}`);
+  }
+
+  return JSON.parse(result.stdout);
+}
+
+function parseFps(rFrameRate: string): number {
+  const [num, den] = rFrameRate.split("/").map(Number);
+  if (!num || !den) return 0;
+  return num / den;
+}
+
+async function main() {
+  const opts = parseArgs(process.argv.slice(2));
+  const project = required(opts, "project");
+  const shot = required(opts, "shot");
+
+  const spec = loadSpec(project, shot);
+
+  const input =
+    typeof opts.file === "string"
+      ? opts.file
+      : path.join(previewsDir(project), ``${shot}_preview.mp4`);
+
+  if (!fs.existsSync(input)) {
+    throw new Error(`Input not found: $`{input}`);
+  }
+
+  const probe = ffprobe(input);
+  const videoStream = probe.streams.find((s: any) => s.codec_type === "video");
+
+  if (!videoStream) {
+    throw new Error("No video stream found");
+  }
+
+  const actual = {
+    width: videoStream.width,
+    height: videoStream.height,
+    fps: parseFps(videoStream.r_frame_rate),
+    duration: Number(probe.format.duration)
+  };
+
+  const reportDir = metadataDir(project);
+  ensureDir(reportDir);
+
+  const reportPath = path.join(reportDir, ``${shot}.inspection.json`);
+  const markdownPath = path.join(reportDir, `$`{shot}.inspection.md`);
+  const contactPath = path.join(reportDir, ``${shot}.contact.png`);
+
+  fs.writeFileSync(
+    reportPath,
+    JSON.stringify(
+      {
+        input,
+        spec: {
+          width: spec.width,
+          height: spec.height,
+          fps: spec.fps,
+          durationFrames: spec.durationFrames,
+          expectedDurationSeconds: spec.durationFrames / spec.fps
+        },
+        actual,
+        problems: {
+          widthMismatch: actual.width !== spec.width,
+          heightMismatch: actual.height !== spec.height,
+          fpsMismatch: Math.abs(actual.fps - spec.fps) > 0.5,
+          durationMismatch:
+            Math.abs(
+              actual.duration - spec.durationFrames / spec.fps
+            ) > 0.25
+        }
+      },
+      null,
+      2
+    ),
+    "utf8"
+  );
+
+  const duration = Number(probe.format.duration) || 1;
+  const rate = Math.max(0.05, 16 / duration);
+
+  spawnSync(
+    "ffmpeg",
+    [
+      "-y",
+      "-i",
+      input,
+      "-vf",
+      `fps=$`{rate},scale=480:-1,tile=4x4`,
+      "-frames:v",
+      "1",
+      contactPath
+    ],
+    {
+      stdio: "ignore",
+      shell: process.platform === "win32"
+    }
+  );
+
+  const markdown = `# Inspection Report: `${shot}
+
+- input: \`$`{input}\`
+- actual width: `${actual.width}
+- actual height: $`{actual.height}
+- actual fps: `${actual.fps.toFixed(2)}
+- actual duration: $`{actual.duration.toFixed(2)}s
+
+## Expected
+
+- width: `${spec.width}
+- height: $`{spec.height}
+- fps: `${spec.fps}
+- duration: $`{(spec.durationFrames / spec.fps).toFixed(2)}s
+
+## Review checklist
+
+- [ ] hierarchy is clear
+- [ ] timing feels intentional
+- [ ] easing is not uniform
+- [ ] typography is readable
+- [ ] camera movement is motivated
+- [ ] effects are restrained
+- [ ] no random flicker
+- [ ] no unintended synchronization
+`;
+
+  fs.writeFileSync(markdownPath, markdown, "utf8");
+
+  console.log(`Inspection JSON: `${reportPath}`);
+  console.log(`Inspection Markdown: $`{markdownPath}`);
+  console.log(`Contact sheet: `${contactPath}`);
+}
+
+main().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
+
+
+scripts/clean.ts
+
+ts
+import fs from "node:fs";
+import path from "node:path";
+import { PROJECTS, TMP } from "./lib/paths";
+import { ensureDir } from "./lib/files";
+
+if (fs.existsSync(TMP)) {
+  fs.rmSync(TMP, { recursive: true, force: true });
+}
+
+const projects = fs.readdirSync(PROJECTS, { withFileTypes: true });
+
+for (const project of projects) {
+  if (!project.isDirectory()) continue;
+
+  const previews = path.join(PROJECTS, project.name, "previews");
+  const renders = path.join(PROJECTS, project.name, "renders");
+
+  if (fs.existsSync(previews)) {
+    fs.rmSync(previews, { recursive: true, force: true });
+    ensureDir(previews);
+    fs.writeFileSync(path.join(previews, ".gitkeep"), "", "utf8");
+  }
+
+  if (fs.existsSync(renders)) {
+    fs.rmSync(renders, { recursive: true, force: true });
+    ensureDir(renders);
+    fs.writeFileSync(path.join(renders, ".gitkeep"), "", "utf8");
+  }
+}
+
+console.log("Cleaned temporary files, previews, and renders.");
+
+
+scripts/validate.ts
+
+ts
+import fs from "node:fs";
+import path from "node:path";
+import { PROJECTS, ROOT, HYPERFRAMES_SCENES } from "./lib/paths";
+import { walk } from "./lib/files";
+import { loadSpecFile } from "./lib/spec";
+import { REMOTION_COMPOSITIONS } from "../../remotion/registry";
+import type { ShotSpec } from "../../motion/spec/shot-spec";
+import { parseArgs } from "./lib/args";
+
+interface Problem {
+  file: string;
+  message: string;
+}
+
+const ALLOWED_FPS = [24, 25, 30, 50, 60];
+
+function findSpecFiles(project?: string): string[] {
+  if (project) {
+    return walk(path.join(PROJECTS, project, "specs"), [".yaml", ".yml"]);
+  }
+
+  return walk(PROJECTS, [".yaml", ".yml"]).filter((file) =>
+    file.includes(`$`{path.sep}specs`${path.sep}`)
+  );
+}
+
+function validateSpec(
+  spec: ShotSpec,
+  file: string,
+  problems: Problem[]
+): void {
+  if (!ALLOWED_FPS.includes(spec.fps)) {
+    problems.push({
+      file,
+      message: `Invalid fps: $`{spec.fps}. Allowed: `${ALLOWED_FPS.join(", ")}`
+    });
+  }
+
+  if (spec.width % 2 !== 0 || spec.height % 2 !== 0) {
+    problems.push({
+      file,
+      message: "Width and height must be even for H.264 compatibility."
+    });
+  }
+
+  if (spec.durationFrames <= 0) {
+    problems.push({
+      file,
+      message: "durationFrames must be positive."
+    });
+  }
+
+  const knownTargets = new Set<string>(["camera", "root"]);
+
+  for (const element of spec.elements ?? []) {
+    knownTargets.add(element.id);
+  }
+
+  for (const typo of spec.typography ?? []) {
+    knownTargets.add(typo.id);
+  }
+
+  for (const step of spec.sequence) {
+    if (!knownTargets.has(step.target)) {
+      problems.push({
+        file,
+        message: `Sequence target not found: $`{step.target}`
+      });
+    }
+
+    if (step.atFrame + step.durationFrames > spec.durationFrames) {
+      problems.push({
+        file,
+        message: `Sequence step `${step.id} exceeds shot duration.`
+      });
+    }
+  }
+
+  for (const transition of spec.transitions ?? []) {
+    if (!knownTargets.has(transition.target)) {
+      problems.push({
+        file,
+        message: `Transition target not found: $`{transition.target}`
+      });
+    }
+  }
+
+  const projectDir = path.resolve(path.dirname(file), "..");
+
+  for (const asset of spec.assets ?? []) {
+    if (asset.required === false) continue;
+
+    if (asset.path.startsWith("system:")) continue;
+
+    const assetPath = path.join(projectDir, asset.path);
+
+    if (!fs.existsSync(assetPath)) {
+      problems.push({
+        file,
+        message: `Missing asset: `${asset.path}`
+      });
+    }
+  }
+
+  if (spec.runtime === "hyperframes") {
+    const sceneId = spec.implementation.sceneId;
+
+    if (!sceneId) {
+      problems.push({
+        file,
+        message: "HyperFrames runtime requires implementation.sceneId"
+      });
+    } else {
+      const entry = path.join(HYPERFRAMES_SCENES, sceneId, "entry.ts");
+
+      if (!fs.existsSync(entry)) {
+        problems.push({
+          file,
+          message: `Missing HyperFrames entry: $`{entry}`
+        });
+      }
+    }
+  }
+
+  if (spec.runtime === "remotion") {
+    const compositionId = spec.implementation.compositionId;
+
+    if (!compositionId) {
+      problems.push({
+        file,
+        message: "Remotion runtime requires implementation.compositionId"
+      });
+    } else {
+      const exists = REMOTION_COMPOSITIONS.some(
+        (comp) => comp.id === compositionId
+      );
+
+      if (!exists) {
+        problems.push({
+          file,
+          message: `Remotion composition not registered: `${compositionId}`
+        });
+      }
+    }
+  }
+}
+
+function validateDuplicatePrimitives(problems: Problem[]): void {
+  const motionDir = path.join(ROOT, "motion");
+  const files = walk(motionDir, [".ts"]);
+
+  const exported = new Map<string, string[]>();
+
+  for (const file of files) {
+    const content = fs.readFileSync(file, "utf8");
+
+    const functionMatches = content.matchAll(
+      /export (?:async )?function ([A-Za-z0-9_]+)/g
+    );
+
+    for (const match of functionMatches) {
+      const name = match[1];
+      const current = exported.get(name) ?? [];
+      current.push(file);
+      exported.set(name, current);
+    }
+
+    const constMatches = content.matchAll(
+      /export const ([A-Za-z0-9_]+)\s*=/g
+    );
+
+    for (const match of constMatches) {
+      const name = match[1];
+      const current = exported.get(name) ?? [];
+      current.push(file);
+      exported.set(name, current);
+    }
+  }
+
+  for (const [name, files] of exported.entries()) {
+    if (files.length > 1) {
+      problems.push({
+        file: files[0],
+        message: `Duplicate motion primitive export: $`{name} in `${files.join(", ")}`
+      });
+    }
+  }
+}
+
+function validateDeterminism(problems: Problem[]): void {
+  const dirs = [
+    path.join(ROOT, "motion"),
+    path.join(ROOT, "hyperframes", "scenes"),
+    path.join(ROOT, "remotion", "components"),
+    path.join(ROOT, "remotion", "compositions")
+  ];
+
+  const files = dirs.flatMap((dir) => walk(dir, [".ts", ".tsx"]));
+
+  const allowedRandom = [
+   
+
+
+───
+
+J. Validation
+
+The validation code is already included above in scripts/validate.ts, but here is the exact validation strategy.
+
+Automated checks
+
+The validator checks:
+
+1. YAML parses.
+2. Zod schema passes.
+3. FPS is allowed.
+4. Dimensions are even.
+5. Duration is positive.
+6. Sequence steps do not exceed shot duration.
+7. Sequence targets exist.
+8. Transition targets exist.
+9. Assets exist unless marked optional or system fonts.
+10. HyperFrames scene entry exists.
+11. Remotion composition is registered.
+12. Duplicate primitive exports are detected.
+13. Forbidden nondeterministic APIs are detected.
+
+Manual visual checks
+
+Automated validation does not prove quality.
+
+The agent must also use:
+
+bash
+npm run inspect -- --project <project> --shot <shot>
+
+
+Then review:
+
+• projects/&lt;project&gt;/metadata/&lt;shot&gt;.inspection.md
+• projects/&lt;project&gt;/metadata/&lt;shot&gt;.contact.png
+• the preview MP4
+
+Human approval
+
+A shot is not complete until the human approves the visual result.
+
+───
+
+K. Example Shot Specification
+
+projects/example-signal/project.md
+
+md
+# example-signal
+
+## Objective
+
+A 10-second high-quality motion graphics opening that demonstrates:
+
+- opening visual
+- title entrance
+- secondary information
+- transition
+- second visual state
+- final hold
+
+## Style
+
+- dark technical background
+- warm orange accent
+- restrained environmental motion
+- strong typographic hierarchy
+- aggressive but controlled title entrance
+- deterministic rendering
+
+## Constraints
+
+- 1920x1080
+- 30fps
+- Arial for initial test
+- no external assets required
+- no Math.random
+- no glow spam
+- no particle spam
+
+
+projects/example-signal/references/analysis-shot-001.md
+
+md
+# Reference Analysis: shot-001
+
+## Source
+
+- reference path: internal concept
+- type: text description
+- purpose: opening title system
+
+## Visual Decomposition
+
+- focal point: main title
+- secondary elements: support line, underline
+- tertiary elements: panel bars
+- environment: grid, particles
+- negative space: upper-right and lower-left preserved
+
+## Composition
+
+- framing: left-aligned title block
+- alignment: strong left axis
+- hierarchy: title > support > panel
+- balance: panel counterweights title in lower right
+- safe margins: 100px+
+
+## Color System
+
+- background: #07090c
+- primary: #f5f7fa
+- secondary: rgba(214,224,235,0.92)
+- accent: #ff5d3a
+- contrast strategy: bright type on dark field
+
+## Typography
+
+- headline behavior: aggressive entrance with compression/settle
+- support behavior: softer character reveal
+- tracking: tight headline, neutral support
+- weight hierarchy: 700 headline, 400 support
+- legibility constraints: support must remain readable during reveal
+
+## Motion Analysis
+
+- primary motion: title enters from left with overshoot/settle
+- secondary motion: underline and support follow
+- environmental motion: slow particle drift
+- camera behavior: subtle opening stabilization, later drift
+- transitions: directional wipe into second state
+
+## Timing Analysis
+
+- estimated fps: 30
+- estimated duration: 300 frames
+- major beats:
+  - 0-24 environment establish
+  - 18-45 title entrance
+  - 46-85 support reveal
+  - 110-128 wipe
+  - 120-180 second state
+  - 180-300 hold with subtle camera drift
+- holds: final 120 frames remain mostly stable
+- stagger strategy: support characters stagger by 1.5 frames
+
+## Translation Constraints
+
+- must keep: aggressive title, soft support, deterministic particles
+- must avoid: glow spam, random flicker, constant camera shake
+- uncertainty: exact accent color may be adjusted by human
+
+## Recommended ShotSpec Mapping
+
+- runtime: hyperframes
+- elements: background, grid, particles, title, underline, support, panel, wipe
+- sequence: environment, title, underline, support, wipe, panel, hold
+- easing: sharp for title, smooth for support, cinematic for camera
+- negative instructions: no random flicker, no excessive blur, no glow overuse
+
+
+projects/example-signal/specs/shot-001.yaml
+
+yaml
+schemaVersion: 1
+project: example-signal
+id: shot-001
+version: 1
+runtime: hyperframes
+durationFrames: 300
+fps: 30
+width: 1920
+height: 1080
+seed: 98765
+
+purpose: >
+  Opening motion graphics statement. Establish a dark technical world,
+  introduce the main title with aggressive but controlled energy,
+  follow with softer supporting text, transition into a second state,
+  then hold with restrained camera drift.
+
+composition:
+  focalPoint:
+    x: 0.28
+    y: 0.45
+  hierarchy:
+    - title-main
+    - text-support
+    - panel-state
+    - environment
+  safeMarginPercent: 6
+  notes: >
+    Title owns the first half. Panel owns the second half.
+    Environment must stay subordinate.
+
+colors:
+  - name: bg
+    value: "#07090c"
+  - name: primary
+    value: "#f5f7fa"
+  - name: secondary
+    value: "#d6e0eb"
+  - name: accent
+    value: "#ff5d3a"
+
+typography:
+  - id: title-main
+    text: MOTION FACTORY
+    fontFamily: Arial, sans-serif
+    weight: 700
+    size: 128
+    tracking: -2
+    color: "#f5f7fa"
+    x: 120
+    y: 390
+
+  - id: text-support
+    text: Agent-driven motion graphics, deterministic by design.
+    fontFamily: Arial, sans-serif
+    weight: 400
+    size: 44
+    lineHeight: 1.25
+    color: "#d6e0eb"
+    x: 126
+    y: 560
+    maxWidth: 1100
+
+elements:
+  - id: background
+    kind: shape
+    shape: rect
+    x: 0
+    y: 0
+    width: 1920
+    height: 1080
+    color: "#07090c"
+
+  - id: grid
+    kind: shape
+    shape: rect
+    x: 0
+    y: 0
+    width: 1920
+    height: 1080
+    opacity: 0.22
+
+  - id: environment-particles
+    kind: group
+    opacity: 0.3
+    notes: Deterministic seeded drift only.
+
+  - id: underline
+    kind: shape
+    shape: rect
+    x: 128
+    y: 535
+    width: 520
+    height: 6
+    color: "#ff5d3a"
+
+  - id: panel-state
+    kind: group
+    x: 1120
+    y: 690
+    width: 620
+    notes: Second-state metrics panel.
+
+  - id: wipe
+    kind: shape
+    shape: rect
+    x: 0
+    y: 0
+    width: 1920
+    height: 1080
+
+sequence:
+  - id: environment-establish
+    target: background
+    action: enter
+    atFrame: 0
+    durationFrames: 24
+    ease: smooth
+    params:
+      opacity: 1
+
+  - id: grid-enter
+    target: grid
+    action: enter
+    atFrame: 6
+    durationFrames: 36
+    ease: cinematic
+    params:
+      y: 0
+      opacity: 0.22
+
+  - id: camera-open
+    target: camera
+    action: camera
+    atFrame: 0
+    durationFrames: 90
+    ease: cinematic
+    params:
+      fromScale: 1.06
+      toScale: 1.0
+
+  - id: title-enter
+    target: title-main
+    action: enter
+    atFrame: 18
+    durationFrames: 29
+    ease: sharp
+    params:
+      fromX: -780
+      anticipation: true
+      compression: true
+      overshoot: true
+
+  - id: underline-enter
+    target: underline
+    action: enter
+    atFrame: 70
+    durationFrames: 16
+    ease: sharp
+    params:
+      scaleX: 1
+
+  - id: support-enter
+    target: text-support
+    action: enter
+    atFrame: 46
+    durationFrames: 80
+    ease: smooth
+    params:
+      charReveal: true
+      staggerFrames: 1.5
+      durationPerCharFrames: 10
+
+  - id: wipe-out
+    target: wipe
+    action: transition
+    atFrame: 110
+    durationFrames: 18
+    ease: sharp
+    params:
+      direction: left-to-right
+
+  - id: panel-enter
+    target: panel-state
+    action: enter
+    atFrame: 120
+    durationFrames: 18
+    ease: overshoot
+    params:
+      y: 80
+      scale: 0.96
+
+  - id: camera-final-drift
+    target: camera
+    action: camera
+    atFrame: 120
+    durationFrames: 180
+    ease: organic
+    params:
+      x: 18
+      y: -10
+      scale: 1.02
+
+transitions:
+  - id: wipe-to-second-state
+    atFrame: 110
+    durationFrames: 18
+    type: wipe
+    target: wipe
+    ease: sharp
+    params:
+      direction: left-to-right
+
+effects:
+  - id: particle-drift
+    target: environment-particles
+    type: drift
+    atFrame: 0
+    durationFrames: 300
+    params:
+      seed: 98765
+      count: 18
+      maxOpacity: 0.42
+
+soundHooks:
+  - id: title-impact
+    frame: 30
+    label: title impact
+    notes: Use a short low-end hit, not a generic whoosh.
+  - id: wipe
+    frame: 114
+    label: wipe transition
+  - id: panel-settle
+    frame: 138
+    label: panel settle
+
+assets:
+  - id: font-main
+    type: font
+    path: system:Arial
+    required: true
+
+constraints:
+  - No external network assets.
+  - No randomized particle flicker.
+  - No camera shake.
+  - No heavy blur.
+  - Title must remain readable at 1920x1080.
+
+negative:
+  - rule: "No glow stronger than subtle accent emphasis"
+    reason: "Preserve legibility and avoid generic AI look"
+  - rule: "No randomized motion"
+    reason: "Determinism"
+  - rule: "No excessive particles"
+    reason: "Restraint"
+  - rule: "No synchronized entrance for all elements"
+    reason: "Hierarchy and pacing"
+
+references:
+  - path: references/analysis-shot-001.md
+    purpose: visual and motion analysis
+
+expectedOutput:
+  codec: h264
+  container: mp4
+  alpha: false
+  notes: Flat master preview for Resolve assembly.
+
+implementation:
+  sceneId: example-signal-opening
+
+
+───
+
+L. Agent Workflow
+
+This is the exact workflow OpenCode should follow.
+
+1. Intake
+
+User provides one of:
+
+• idea
+• reference image
+• reference video
+• storyboard
+• rough shot description
+
+OpenCode does not immediately write scene code.
+
+It first identifies:
+
+• project
+• shot ID
+• runtime
+• duration
+• fps
+• resolution
+• purpose
+
+2. Analysis
+
+If a strong vision/reasoning model is available:
+
+• it writes projects/&lt;project&gt;/references/analysis-&lt;shot&gt;.md
+• it does not edit code
+• it does not rewrite the repository
+
+If unavailable:
+
+• OpenCode creates the analysis itself conservatively
+• it marks uncertainty in the analysis file
+
+3. Specification
+
+Create or update:
+
+text
+projects/<project>/specs/<shot>.yaml
+
+
+The spec must validate.
+
+4. Implementation selection
+
+Use skills/hyperframes-vs-remotion.md.
+
+If HyperFrames:
+
+• create or modify: 
+◦ hyperframes/scenes/&lt;sceneId&gt;/entry.ts
+◦ hyperframes/scenes/&lt;sceneId&gt;/scene.ts
+
+If Remotion:
+
+• create or modify: 
+◦ remotion/compositions/&lt;Composition&gt;.tsx
+◦ remotion/Root.tsx
+◦ remotion/registry.ts
+
+5. Primitive check
+
+Before writing animation code:
+
+• search motion/core
+• search motion/easing
+• search motion/text
+• search motion/transitions
+• search motion/camera
+
+Only create a new primitive if justified.
+
+6. Determinism check
+
+Before rendering:
+
+• no Math.random()
+• no Date.now()
+• no timers
+• seeded RNG only
+• frame-based timing only
+
+7. Validation
+
+Run:
+
+bash
+npm run validate -- --project <project>
+
+
+Fix all validation failures.
+
+8. Preview
+
+Run:
+
+bash
+npm run preview -- --project <project> --shot <shot>
+
+
+9. Inspection
+
+Run:
+
+bash
+npm run inspect -- --project <project> --shot <shot>
+
+
+Review:
+
+• preview file
+• contact sheet
+• inspection JSON
+• inspection Markdown
+
+10. Comparison
+
+Compare output against:
+
+• shot purpose
+• sequence timing
+• negative instructions
+• motion hierarchy
+• easing intent
+
+11. Minimal correction
+
+If there is a deviation:
+
+1. identify the smallest broken area
+2. change only that area
+3. preserve unrelated work
+4. revalidate
+5. re-render
+6. re-inspect
+
+12. Iteration limit
+
+For autonomous iteration:
+
+• maximum 3 visual correction passes without human input
+• if still failing, stop and report the likely issue
+
+This prevents endless destructive rewriting.
+
+13. Final render
+
+When approved:
+
+bash
+npm run render -- --project <project> --shot <shot>
+
+
+14. Resolve handoff
+
+Move generated renders into Resolve manually or via project folder convention.
+
+Do not attempt fragile timeline automation unless explicitly requested.
+
+───
+
+M. Installation on Windows
+
+Use PowerShell.
+
+1. Install prerequisites
+
+powershell
+winget install OpenJS.NodeJS.LTS
+winget install Gyan.FFmpeg
+winget install Git.Git
+
+
+Close and reopen PowerShell so PATH updates.
+
+Verify:
+
+powershell
+node -v
+npm -v
+ffmpeg -version
+ffprobe -version
+git --version
+
+
+2. Create or enter the repository
+
+If starting fresh:
+
+powershell
+mkdir motion-factory
+cd motion-factory
+
+
+Then place the repository files here.
+
+If cloning an existing repo:
+
+powershell
+git clone <your-repo-url>
+cd motion-factory
+
+
+3. Install Node dependencies
+
+powershell
+npm install
+
+
+4. Install Playwright browser
+
+This is required for HyperFrames headless rendering.
+
+powershell
+npx playwright install chromium
+
+
+5. Ensure Remotion browser
+
+powershell
+npx remotion browser ensure
+
+
+6. Verify scene listing
+
+powershell
+npm run list-scenes
+
+
+Expected output should include:
+
+text
+HyperFrames scenes:
+- example-signal-opening
+
+Remotion compositions:
+- ExampleMetrics (remotion/compositions/ExampleMetrics.tsx)
+
+
+───
+
+N. First Test
+
+This is the exact first-test procedure.
+
+1. Validate the example project
+
+powershell
+npm run validate -- --project example-signal
+
+
+Expected:
+
+text
+Validation passed.
+
+
+If validation fails, fix the reported file before continuing.
+
+2. Render the HyperFrames preview
+
+powershell
+npm run preview -- --project example-signal --shot shot-001
+
+
+Expected output file:
+
+text
+projects/example-signal/previews/shot-001_preview.mp4
+
+
+3. Inspect the preview
+
+powershell
+npm run inspect -- --project example-signal --shot shot-001
+
+
+Expected artifacts:
+
+text
+projects/example-signal/metadata/shot-001.inspection.json
+projects/example-signal/metadata/shot-001.inspection.md
+projects/example-signal/metadata/shot-001.contact.png
+
+
+Open:
+
+• the MP4
+• the contact sheet
+• the Markdown report
+
+Check:
+
+• title enters from left
+• title compresses and settles
+• support text follows softer
+• wipe transition occurs
+• panel enters
+• final hold is stable
+• no random flicker
+• no excessive effects
+
+4. Render final example
+
+powershell
+npm run render -- --project example-signal --shot shot-001
+
+
+Expected output:
+
+text
+projects/example-signal/renders/shot-001/example-signal_shot-001_v01_30fps_1920x1080.mp4
+
+
+5. Optional Remotion test
+
+Create a Remotion spec for shot-002 if you want to test the Remotion path:
+
+yaml
+schemaVersion: 1
+project: example-signal
+id: shot-002
+version: 1
+runtime: remotion
+durationFrames: 150
+fps: 30
+width: 1920
+height: 1080
+seed: 55555
+
+purpose: >
+  Data-driven second-state panel using Remotion.
+
+sequence:
+  - id: panel-enter
+    target: panel
+    action: enter
+    atFrame: 0
+    durationFrames: 80
+    ease: smooth
+
+assets:
+  - id: font-main
+    type: font
+    path: system:Arial
+    required: true
+
+implementation:
+  compositionId: ExampleMetrics
+  props:
+    title: "SYSTEM OUTPUT"
+    metrics:
+      - label: "SPEC COVERAGE"
+        value: 86
+        color: "#ff5d3a"
+      - label: "DETERMINISM"
+        value: 98
+        color: "#4da3ff"
+      - label: "REUSE"
+        value: 74
+        color: "#65e0a8"
+
+
+Then:
+
+powershell
+npm run validate -- --project example-signal
+npm run preview -- --project example-signal --shot shot-002
+npm run inspect -- --project example-signal --shot shot-002
+
+
+───
+
+Additional Operational Notes
+
+Model division of labor
+
+Human
+
+Supplies:
+
+• taste
+• references
+• creative direction
+• final approval
+• emotional judgment
+
+Strong reasoning/vision model
+
+Supplies:
+
+• reference analysis
+• visual decomposition
+• shot planning
+• negative constraints
+• recommended spec mapping
+
+It should produce artifacts, not edit code.
+
+OpenCode + LongCat 2.0
+
+Supplies:
+
+• repository inspection
+• implementation
+• modification
+• validation
+• rendering
+• iteration
+
+It must obey AGENTS.md.
+
+Motion library
+
+Supplies:
+
+• reusable timing
+• easing
+• stagger
+• spring
+• text reveals
+• transitions
+• camera helpers
+
+HyperFrames/Remotion
+
+Supply:
+
+• execution
+• deterministic frame behavior
+• renderability
+
+Resolve
+
+Supplies:
+
+• final assembly
+• audio
+• grade
+• delivery
+
+───
+
+Explicitly Rejected Automation
+
+The following are intentionally not automated by default:
+
+Full Resolve timeline scripting
+
+Reason:
+
+• fragile
+• version-dependent
+• high maintenance cost
+• low benefit for a single-operator system
+
+Instead, use:
+
+• consistent file naming
+• shot folders
+• manual import into Resolve
+• optional CSV shot list
+
+Automatic visual quality scoring
+
+Reason:
+
+• visual quality cannot be reliably unit-tested
+• false confidence is dangerous
+
+Instead, use:
+
+• deterministic validation
+• preview/contact sheet generation
+• human review
+• optional vision-model review as advisory only
+
+Runtime network dependencies
+
+Reason:
+
+• nondeterministic
+• fragile
+• violates local-first constraint
+
+Instead:
+
+• local assets
+• local fonts
+• seeded procedural generation only
+
+───
+
+What to Do Next
+
+Once this repository is on disk:
+
+1. install dependencies
+2. run the example test
+3. create a new project
+4. write one shot spec
+5. implement one HyperFrames shot
+6. render preview
+7. inspect
+8. iterate
+9. only then expand to multi-shot production
+
+This system is designed to grow by adding:
+
+• more primitives
+• more skills
+• more templates
+• more project specs
+
+not by letting the agent improvise a new animation architecture every time.
