@@ -1,0 +1,5019 @@
+MOTION STUDIO V2 — OPENCODE CONSTRUCTION SPECIFICATION
+
+This is the rebuild specification for the previous Build.txt / Version 0 foundation.
+
+This document is not a conceptual essay. It is a construction specification intended to be executed by OpenCode.
+
+The target is a professional, agent-operated motion-design studio where the human acts as creative director and final approver, not as a repair technician.
+
+───
+
+EXECUTIVE ARCHITECTURE
+
+The studio is organized as a layered production system.
+
+text
+CLIENT BRIEF
+    ↓
+HUMAN CREATIVE DIRECTION
+    ↓
+OPENCODE ORCHESTRATOR
+    ↓
+TASK GRAPH / AGENT SWARM
+    ↓
+RESEARCH / REFERENCE / STYLE / DESIGN / MOTION / ASSETS / IMPLEMENTATION / QA
+    ↓
+MOTIONSPEC
+    ↓
+MOTION IR
+    ↓
+RENDERER ADAPTER
+    ↓
+EXECUTION ENGINE
+    ↓
+RENDER / INSPECT / QA
+    ↓
+HUMAN CREATIVE REVIEW
+    ↓
+LOCALIZED REVISION
+    ↓
+FINAL DELIVERY
+
+
+The most important architectural rule is:
+
+text
+Creative intent is the source.
+MotionSpec is the structured creative contract.
+Motion IR is the canonical machine-readable motion representation.
+Renderers are execution backends, not sources of truth.
+
+
+The studio must support:
+
+• 2D motion graphics
+• typography
+• graphic design
+• compositing
+• camera language
+• procedural animation
+• data-driven animation
+• 2D/3D hybrid work later
+• editorial assembly
+• client-specific visual systems
+• reusable motion primitives
+• reference analysis
+• iterative creative direction
+• technical and visual QA
+• accumulated validated knowledge
+
+The human should be able to say:
+
+“The opening needs to feel more premium and restrained. Keep the composition but make the impact 20% heavier and let the typography breathe longer.”
+
+The system should translate that into:
+
+text
+style.energy: reduce
+behavior.impact: +20%
+typography hold: increase
+recovery: slower
+camera reaction: softer
+negative: avoid extra decoration
+
+
+and then produce a localized implementation patch.
+
+The human should not need to say:
+
+“Change layer 17 position from 840 to 817 and adjust the third keyframe.”
+
+───
+
+WHAT WE KEEP FROM BUILDTXT
+
+The previous Build.txt contains strong production instincts. These are preserved.
+
+
+Existing element
+Status
+Reason
+
+Deterministic rendering discipline
+KEEP
+Essential for agent-operated production.
+
+Validation before rendering
+KEEP
+Prevents unstable generation.
+
+Structured shot specification
+KEEP, then evolve
+Necessary for agent communication.
+
+Reusable motion primitives
+KEEP
+Prevents repeated reinvention.
+
+Project templates
+KEEP
+Enables consistent production.
+
+Inspection artifacts
+KEEP
+Needed for QA and revision.
+
+Iteration loop: identify weakness → smallest change → rerender
+KEEP
+Correct creative revision model.
+
+Negative constraints
+KEEP
+Critical for avoiding generic AI motion.
+
+Renderer abstraction
+KEEP
+Necessary for multiple backends.
+
+Resolve as finishing, not motion authoring
+KEEP
+Correct division of labor.
+
+No After Effects execution backend
+KEEP
+AE remains doctrine, not runtime.
+
+Human approval checkpoints
+KEEP
+Creative quality requires human judgment.
+
+Skills as scoped knowledge
+KEEP
+Better than giant prompts.
+
+Local-first, free-first bias
+KEEP
+Matches operational constraints.
+
+
+
+───
+
+WHAT WE CHANGE
+
+
+Existing element
+Change
+Reason
+
+MotionSpec as target/action/duration/ease
+Expand into MotionSpec V2 with beats, hierarchy, relationships, semantics
+Professional motion is not just independent actions.
+
+Direct mapping of creative words to GSAP eases
+Replace with semantic motion curve resolution
+“cinematic = power3.inOut” is too shallow.
+
+Internal conceptual HyperFrames runtime
+Replace with adapter to real HyperFrames
+Do not reimplement an existing framework.
+
+Frame-only timing model
+Add beat/timing abstraction
+Motion needs story/audio/visual beat logic.
+
+Independent object animation
+Add relationship-based motion
+Leader/follower/reactive behavior is essential.
+
+Single AGENTS.md as primary instruction system
+Keep root AGENTS.md but move knowledge into scoped skills and artifacts
+Avoid giant prompt memory.
+
+Simple validation script
+Expand into technical/structural/temporal/visual/creative QA
+Technical correctness is not creative correctness.
+
+Project-only structure
+Add studio/client/project knowledge separation
+Client knowledge must persist across projects.
+
+Manual script invocation only
+Add task graph and agent orchestration
+Required for dependency-aware parallel work.
+
+Simple render/inspect commands
+Add preflight, capability discovery, QA reports, decision logs
+Needed for repeatable studio operation.
+
+Remotion as equal general alternative
+Keep Remotion adapter but make selection capability-based
+Remotion is best for data/component-driven work, not every shot.
+
+Resolve integration as simple handoff
+Split into ResolveController and future FusionCompiler
+Fusion and Resolve have different roles.
+
+
+
+───
+
+WHAT WE REMOVE
+
+
+Removed element
+Reason
+
+Internal HyperFrames renderer as primary implementation
+Real HyperFrames should solve rendering where possible.
+
+Direct hardcoded easing map as the motion language
+Semantic descriptors must resolve through a curve system.
+
+Per-project node_modules by default
+Avoid dependency duplication.
+
+npm ci as routine preflight
+It can destroy existing node_modules; repair must be deliberate.
+
+Giant master prompt
+Knowledge must be structured, scoped, and selectively loaded.
+
+Agents freely mutating permanent knowledge
+Knowledge must pass candidate → validation → promotion.
+
+Pretending visual QA can be fully automated
+Visual and creative QA require human/vision-assisted review.
+
+AE-style layer/property execution model
+AE is knowledge/doctrine, not execution backend.
+
+Random agent swarms without task graph
+Parallelism must follow dependencies and capability matching.
+
+One model for every task
+Model routing must match task class.
+
+
+
+───
+
+WHAT WE ADD
+
+
+Added system
+Purpose
+
+Motion IR
+Canonical renderer-independent motion representation.
+
+Beat/timing model
+Semantic timing beyond raw frames.
+
+Relationship graph
+Leader/follower/reactive/counter-motion behavior.
+
+Semantic curve resolver
+Converts motion characteristics into renderer-specific curves.
+
+Client records
+Persistent client style, brand, motion identity, and history.
+
+Studio knowledge base
+Validated reusable studio doctrine.
+
+Knowledge promotion pipeline
+Prevents unvalidated agent learning from polluting permanent knowledge.
+
+Task graph orchestrator
+Dependency-aware parallel agent work.
+
+Model routing policy
+Uses appropriate model class per task.
+
+Preflight system
+Validates environment before creative execution.
+
+Capability discovery
+Detects available renderers/tools/models.
+
+Artifact schemas
+Structured communication between agents.
+
+QA layers
+Technical, structural, temporal, visual, creative.
+
+Observability ledger
+Records what happened, why, with what model/tool/output.
+
+Security/permission model
+Agents receive least-privilege access.
+
+Renderer adapters
+HyperFrames, GSAP, Remotion, Fusion, Resolve can be integrated without changing core.
+
+
+
+───
+
+SYSTEM ARCHITECTURE
+
+The system has five primary layers.
+
+1. Creative layer
+
+Inputs:
+
+• client brief
+• human direction
+• references
+• client history
+• studio doctrine
+• anti-references
+
+Outputs:
+
+• brief.yaml
+• reference-analysis.yaml
+• style-profile.yaml
+• scene-plan.yaml
+• motion-spec.yaml
+
+2. Motion intelligence layer
+
+Inputs:
+
+• MotionSpec
+• client style
+• studio motion doctrine
+• constraints
+
+Outputs:
+
+• motion-ir.yaml
+• resolved beat map
+• resolved relationships
+• resolved curves
+• asset requirements
+• renderer recommendations
+
+3. Renderer layer
+
+Inputs:
+
+• Motion IR
+• renderer capabilities
+• project overrides
+
+Outputs:
+
+• renderer-specific source
+• render commands
+• render artifacts
+• renderer warnings
+
+Initial renderer:
+
+• HyperFrames
+
+Future adapters:
+
+• GSAP/DOM
+• Remotion
+• Fusion
+• Resolve
+
+4. QA layer
+
+Inputs:
+
+• MotionSpec
+• Motion IR
+• rendered output
+• project constraints
+• client style
+
+Outputs:
+
+• technical-qa.json
+• structural-qa.json
+• temporal-qa.json
+• visual-qa.json
+• creative-qa.md
+• critique.md
+
+5. Knowledge layer
+
+Inputs:
+
+• QA reports
+• human approvals/rejections
+• revision history
+• renderer stability evidence
+
+Outputs:
+
+• candidate lessons
+• validated lessons
+• deprecated lessons
+• client pattern records
+• studio doctrine updates
+
+───
+
+KEY ARCHITECTURAL DECISIONS
+
+Each major decision below includes:
+
+• DECISION
+• WHY
+• EVIDENCE
+• ALTERNATIVES CONSIDERED
+• WHY ALTERNATIVES WERE REJECTED
+• IMPLEMENTATION CONSEQUENCE
+
+───
+
+ADR-001: Renderer is not source of truth
+
+DECISION
+
+The renderer is an execution backend. Motion IR is the canonical representation.
+
+WHY
+
+If HyperFrames, Remotion, Fusion, or GSAP becomes the source of truth, creative intent becomes trapped in implementation details.
+
+EVIDENCE
+
+The studio must support multiple renderers and preserve creative meaning across revisions.
+
+ALTERNATIVES CONSIDERED
+
+1. Store scenes directly as HyperFrames code.
+2. Store scenes directly as Remotion components.
+3. Store scenes directly as Fusion node graphs.
+
+WHY ALTERNATIVES WERE REJECTED
+
+They couple creative intent to one backend and make renderer migration expensive.
+
+IMPLEMENTATION CONSEQUENCE
+
+All generated renderer code must be traceable back to a MotionSpec and Motion IR.
+
+───
+
+ADR-002: Use real HyperFrames, not internal reimplementation
+
+DECISION
+
+Use real HyperFrames through an adapter. Do not recreate HyperFrames inside the studio.
+
+WHY
+
+HyperFrames already targets deterministic HTML/CSS/media-to-video rendering and agent workflows.
+
+EVIDENCE
+
+The rebuild directive explicitly identifies HyperFrames as an actual open-source framework with CLI capabilities.
+
+ALTERNATIVES CONSIDERED
+
+1. Continue with internal Playwright/esbuild renderer.
+2. Build a custom deterministic browser renderer.
+3. Use Remotion for everything.
+
+WHY ALTERNATIVES WERE REJECTED
+
+1. Internal renderer duplicates infrastructure.
+2. Custom renderer increases maintenance burden.
+3. Remotion does not replace all HyperFrames/GSAP choreography needs.
+
+IMPLEMENTATION CONSEQUENCE
+
+The previous internal HyperFrames runtime becomes fallback/legacy only. The primary path is:
+
+text
+Motion IR → HyperFrames adapter → real HyperFrames → output
+
+
+Exact CLI flags must be verified by a capability probe before first render.
+
+───
+
+ADR-003: Beat-based timing instead of frame-only authoring
+
+DECISION
+
+Author motion using beats and semantic timing, then resolve to frames.
+
+WHY
+
+Professional motion is motivated by story, audio, impact, anticipation, and reaction, not only frame numbers.
+
+EVIDENCE
+
+The directive requires story/audio/visual beat abstraction.
+
+ALTERNATIVES CONSIDERED
+
+1. Frame-only timing.
+2. Seconds-only timing.
+3. Audio-only timing.
+
+WHY ALTERNATIVES WERE REJECTED
+
+Frame-only loses intent. Seconds-only ignores FPS. Audio-only fails when no audio exists.
+
+IMPLEMENTATION CONSEQUENCE
+
+MotionSpec must support beat references. Motion IR resolves beats into frames using FPS, duration, pacing, and dependencies.
+
+───
+
+ADR-004: Relationship-based animation
+
+DECISION
+
+Motion IR must model relationships between objects.
+
+WHY
+
+Professional animation often consists of coordinated behavior: lead, follow, react, counterbalance, absorb.
+
+EVIDENCE
+
+The directive requires leader/follower, reactive, delayed, staggered, counter-motion, coupled, independent relationships.
+
+ALTERNATIVES CONSIDERED
+
+Independent object animation only.
+
+WHY ALTERNATIVES WERE REJECTED
+
+It forces the agent to manually coordinate related motion and produces mechanical results.
+
+IMPLEMENTATION CONSEQUENCE
+
+A creative instruction such as:
+
+“Title hits, underline follows late, background reacts subtly, camera absorbs impact.”
+
+must become one coordinated motion event network, not four unrelated animations.
+
+───
+
+ADR-005: Semantic curve resolution instead of direct easing names
+
+DECISION
+
+Creative descriptors resolve into semantic motion characteristics, then into renderer-specific curves.
+
+WHY
+
+Direct mappings like cinematic = power3.inOut are not meaningful enough for professional motion.
+
+EVIDENCE
+
+The directive explicitly rejects hard-coding creative words into arbitrary easings.
+
+ALTERNATIVES CONSIDERED
+
+1. Fixed easing category map.
+2. Raw cubic-bezier authoring only.
+3. Spring-only model.
+
+WHY ALTERNATIVES WERE REJECTED
+
+1. Fixed map is too shallow.
+2. Raw Bézier authoring is too low-level for creative direction.
+3. Spring-only cannot express all motion styles.
+
+IMPLEMENTATION CONSEQUENCE
+
+Build a curve resolver:
+
+text
+creative description
+→ semantic motion characteristics
+→ curve profile
+→ renderer-specific implementation
+
+
+GSAP easing is an execution capability, not the definition of the motion language.
+
+───
+
+ADR-006: Shared root dependencies, not per-project dependency trees
+
+DECISION
+
+Use one shared studio dependency tree where practical.
+
+WHY
+
+The user explicitly does not want:
+
+text
+project-a/node_modules
+project-b/node_modules
+project-c/node_modules
+
+
+EVIDENCE
+
+Node module resolution searches upward through parent directories. npm workspaces support shared root management.
+
+ALTERNATIVES CONSIDERED
+
+1. Independent npm install per project.
+2. NODE_PATH global hack.
+3. Automatic npm ci before every task.
+
+WHY ALTERNATIVES WERE REJECTED
+
+1. Wastes disk and creates version drift.
+2. NODE_PATH is fragile and not default-friendly.
+3. npm ci can unnecessarily delete dependencies.
+
+IMPLEMENTATION CONSEQUENCE
+
+Projects inherit the studio runtime. Project-specific dependency exceptions must be explicit and isolated.
+
+───
+
+ADR-007: OpenCode is the live orchestrator
+
+DECISION
+
+OpenCode is the live orchestration layer.
+
+WHY
+
+The user communicates primarily with OpenCode, and OpenCode supports agents/subagents, model configuration, permissions, and task delegation.
+
+EVIDENCE
+
+The directive states OpenCode officially supports primary agents and specialized subagents.
+
+ALTERNATIVES CONSIDERED
+
+1. Custom external orchestrator.
+2. Qwen as live orchestrator.
+3. Manual human task dispatch.
+
+WHY ALTERNATIVES WERE REJECTED
+
+1. Duplicate orchestration system.
+2. Qwen is architect/spec author here, not live executor.
+3. Manual dispatch defeats the studio objective.
+
+IMPLEMENTATION CONSEQUENCE
+
+Agent definitions, permissions, and routing policies must be expressed in forms OpenCode can consume natively or through verified configuration adapters.
+
+───
+
+ADR-008: Artifacts instead of conversational memory
+
+DECISION
+
+Agents communicate through structured artifacts.
+
+WHY
+
+Large conversational dumps are hard to validate, inspect, version, and reuse.
+
+EVIDENCE
+
+The directive requires schemas, validation, and inspectable artifacts.
+
+ALTERNATIVES CONSIDERED
+
+Chat-only agent communication.
+
+WHY ALTERNATIVES WERE REJECTED
+
+It creates opaque state and prevents reliable QA.
+
+IMPLEMENTATION CONSEQUENCE
+
+All important agent outputs must be schema-validated artifacts.
+
+───
+
+ADR-009: Controlled knowledge promotion
+
+DECISION
+
+Agents may propose lessons, but permanent knowledge requires validation and promotion.
+
+WHY
+
+Uncontrolled learning can poison client/studio doctrine.
+
+EVIDENCE
+
+The directive requires candidate → evidence → validation → promotion.
+
+ALTERNATIVES CONSIDERED
+
+Direct agent writes to permanent knowledge.
+
+WHY ALTERNATIVES WERE REJECTED
+
+Too risky.
+
+IMPLEMENTATION CONSEQUENCE
+
+Knowledge is separated into candidate, validated, deprecated, and must carry provenance.
+
+───
+
+ADR-010: First slice uses HyperFrames only
+
+DECISION
+
+The first vertical slice uses HyperFrames as the only active renderer.
+
+WHY
+
+The core loop must be proven before adding Fusion, Resolve automation, Remotion expansion, and 3D.
+
+EVIDENCE
+
+The directive requires a minimum viable vertical slice.
+
+ALTERNATIVES CONSIDERED
+
+Build all renderer adapters simultaneously.
+
+WHY ALTERNATIVES WERE REJECTED
+
+Too much surface area before the core loop works.
+
+IMPLEMENTATION CONSEQUENCE
+
+Fusion/Resolve/Remotion adapters may be stubbed, but the first end-to-end production path must use HyperFrames.
+
+───
+
+SOURCE-OF-TRUTH VERIFICATION LEDGER
+
+This spec must not rely on hallucinated APIs.
+
+The following claims are treated as architectural inputs, but Phase 0 must verify them against official documentation/source code.
+
+
+Claim
+Source type
+Current status in this spec
+Confidence
+Architectural consequence
+
+OpenCode supports primary agents, subagents, model config, permissions
+Official OpenCode docs/directive
+Must verify exact syntax in Phase 0
+Medium
+Agent definitions are canonical YAML/MD, mapped to OpenCode native format.
+
+OpenCode supports skills with scoped loading
+Official OpenCode docs/directive
+Must verify exact location/permissions
+Medium
+Skills live as structured Markdown/scripts and are loaded progressively.
+
+HyperFrames is an actual open-source HTML/CSS/media-to-MP4 framework with CLI
+Directive/project evidence
+Exact CLI surface must be probed
+Medium
+Adapter uses capability discovery, not hardcoded flags.
+
+GSAP supports timelines, easing, stagger, seekable animation
+GSAP docs
+Stable known capability
+High
+GSAP is an execution capability, not source of truth.
+
+Remotion supports deterministic React composition
+Remotion docs
+Stable known capability
+High
+Remotion adapter remains for data/component-driven scenes.
+
+Fusion supports node graph, modifiers, expressions, splines, scripting
+Blackmagic official docs
+Exact API must be verified before Phase 9
+High conceptually, low implementation detail
+FusionCompiler is deferred and isolated.
+
+Resolve supports scripting/automation for project/timeline/render
+Blackmagic official docs
+Exact API must be verified before Phase 9
+High conceptually, low implementation detail
+ResolveController is deferred and isolated.
+
+npm workspaces support shared root package management
+npm docs
+Stable
+High
+Use root dependency tree.
+
+Node module resolution searches parent node_modules
+Node docs
+Stable
+High
+Shared dependencies can serve projects.
+
+
+
+If any Phase 0 verification fails, OpenCode must stop and produce a deviation report rather than inventing behavior.
+
+───
+
+REPOSITORY STRUCTURE
+
+The root repository is the studio runtime.
+
+text
+MOTION-STUDIO/
+├── AGENTS.md
+├── package.json
+├── package-lock.json
+├── .nvmrc
+├── tsconfig.base.json
+├── README.md
+│
+├── studio/
+│   ├── config/
+│   │   ├── studio.yaml
+│   │   ├── agents.yaml
+│   │   ├── models.yaml
+│   │   ├── permissions.yaml
+│   │   ├── renderers.yaml
+│   │   └── qa.yaml
+│   │
+│   ├── knowledge/
+│   │   ├── doctrine/
+│   │   ├── validated/
+│   │   ├── candidate/
+│   │   ├── deprecated/
+│   │   └── indexes/
+│   │
+│   ├── skills/
+│   │   ├── motion-principles/
+│   │   ├── motion-spec-authoring/
+│   │   ├── motion-ir-authoring/
+│   │   ├── curve-resolution/
+│   │   ├── typography-motion/
+│   │   ├── camera-language/
+│   │   ├── hyperframes-production/
+│   │   ├── remotion-production/
+│   │   ├── fusion-production/
+│   │   ├── resolve-production/
+│   │   ├── visual-qa/
+│   │   ├── temporal-qa/
+│   │   ├── technical-qa/
+│   │   ├── reference-analysis/
+│   │   ├── client-style-analysis/
+│   │   └── project-bootstrap/
+│   │
+│   ├── templates/
+│   │   ├── project-template/
+│   │   ├── client-template/
+│   │   └── artifact-template/
+│   │
+│   └── playbooks/
+│       ├── premium-restrained.md
+│       ├── kinetic-type.md
+│       ├── data-driven.md
+│       └── product-launch.md
+│
+├── core/
+│   ├── schemas/
+│   │   ├── artifact.schema.ts
+│   │   ├── motion-spec.schema.ts
+│   │   ├── motion-ir.schema.ts
+│   │   ├── task-graph.schema.ts
+│   │   ├── qa-report.schema.ts
+│   │   ├── lesson.schema.ts
+│   │   ├── client.schema.ts
+│   │   └── project.schema.ts
+│   │
+│   ├── motion/
+│   │   ├── timing/
+│   │   ├── beats/
+│   │   ├── relationships/
+│   │   ├── curves/
+│   │   ├── primitives/
+│   │   ├── typography/
+│   │   ├── camera/
+│   │   ├── transitions/
+│   │   └── compositing/
+│   │
+│   ├── ir/
+│   │   ├── resolve-motion-spec.ts
+│   │   ├── resolve-beats.ts
+│   │   ├── resolve-relationships.ts
+│   │   └── resolve-curves.ts
+│   │
+│   ├── artifacts/
+│   │   ├── read.ts
+│   │   ├── write.ts
+│   │   ├── validate.ts
+│   │   └── hash.ts
+│   │
+│   ├── qa/
+│   │   ├── technical.ts
+│   │   ├── structural.ts
+│   │   ├── temporal.ts
+│   │   ├── visual.ts
+│   │   └── creative.ts
+│   │
+│   └── knowledge/
+│       ├── loader.ts
+│       ├── search.ts
+│       ├── promotion.ts
+│       └── provenance.ts
+│
+├── agents/
+│   ├── definitions/
+│   │   ├── orchestrator.md
+│   │   ├── preflight.md
+│   │   ├── creative-director.md
+│   │   ├── reference-analyst.md
+│   │   ├── style-analyst.md
+│   │   ├── art-director.md
+│   │   ├── motion-designer.md
+│   │   ├── implementer.md
+│   │   ├── renderer-specialist.md
+│   │   ├── technical-qa.md
+│   │   ├── temporal-qa.md
+│   │   ├── visual-qa.md
+│   │   ├── motion-critic.md
+│   │   ├── knowledge-curator.md
+│   │   └── asset-manager.md
+│   │
+│   └── routing/
+│       ├── task-classes.yaml
+│       ├── model-policies.yaml
+│       └── capability-matching.yaml
+│
+├── tools/
+│   ├── preflight/
+│   │   ├── run.ts
+│   │   ├── node-check.ts
+│   │   ├── dependency-check.ts
+│   │   ├── binary-check.ts
+│   │   ├── renderer-probe.ts
+│   │   └── project-check.ts
+│   │
+│   ├── project/
+│   │   ├── create.ts
+│   │   ├── bootstrap.ts
+│   │   └── override.ts
+│   │
+│   ├── client/
+│   │   ├── create.ts
+│   │   └── update-style.ts
+│   │
+│   ├── tasks/
+│   │   ├── create-graph.ts
+│   │   ├── run-graph.ts
+│   │   ├── validate-graph.ts
+│   │   └── ledger.ts
+│   │
+│   ├── render/
+│   │   ├── run.ts
+│   │   └── select-renderer.ts
+│   │
+│   ├── inspect/
+│   │   ├── ffprobe.ts
+│   │   ├── frames.ts
+│   │   ├── contact-sheet.ts
+│   │   └── temporal-report.ts
+│   │
+│   └── knowledge/
+│       ├── propose.ts
+│       ├── validate.ts
+│       └── promote.ts
+│
+├── runtimes/
+│   ├── hyperframes/
+│   │   ├── package.json
+│   │   ├── adapter.ts
+│   │   ├── capability-probe.ts
+│   │   ├── compile.ts
+│   │   ├── render.ts
+│   │   └── README.md
+│   │
+│   ├── gsap-dom/
+│   │   ├── adapter.ts
+│   │   └── README.md
+│   │
+│   ├── remotion/
+│   │   ├── package.json
+│   │   ├── adapter.ts
+│   │   ├── Root.tsx
+│   │   └── README.md
+│   │
+│   ├── fusion/
+│   │   ├── adapter-stub.ts
+│   │   └── README.md
+│   │
+│   └── resolve/
+│       ├── adapter-stub.ts
+│       └── README.md
+│
+├── pipelines/
+│   ├── default.yaml
+│   ├── short-form.yaml
+│   ├── brand-opening.yaml
+│   └── data-driven.yaml
+│
+├── clients/
+│   ├── _template/
+│   └── acme/
+│
+├── projects/
+│   ├── _template/
+│   └── acme-premium-opening/
+│
+├── logs/
+│   ├── runs/
+│   ├── tasks/
+│   ├── renders/
+│   └── decisions/
+│
+└── tests/
+    ├── bootstrap/
+    ├── dependency/
+    ├── motion-spec/
+    ├── motion-ir/
+    ├── renderer/
+    ├── qa/
+    └── regression/
+
+
+───
+
+DEPENDENCY ARCHITECTURE
+
+Primary rule
+
+One shared studio dependency tree where practical.
+
+text
+MOTION-STUDIO/
+├── package.json
+├── package-lock.json
+├── node_modules/
+├── core/
+├── tools/
+├── runtimes/
+└── projects/
+
+
+Projects should not have their own node_modules unless a documented exception exists.
+
+Root package.json
+
+json
+{
+  "name": "motion-studio",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.10"
+  },
+  "workspaces": [
+    "core",
+    "tools/*",
+    "runtimes/*"
+  ],
+  "scripts": {
+    "preflight": "node tools/preflight/run.js",
+    "create-client": "node tools/client/create.js",
+    "create-project": "node tools/project/create.js",
+    "bootstrap-project": "node tools/project/bootstrap.js",
+    "task": "node tools/tasks/run-graph.js",
+    "render": "node tools/render/run.js",
+    "inspect": "node tools/inspect/run.js",
+    "qa": "node tools/qa/run.js",
+    "knowledge:propose": "node tools/knowledge/propose.js",
+    "knowledge:promote": "node tools/knowledge/promote.js"
+  }
+}
+
+
+The exact dependency list is populated after Phase 0 verification.
+
+Expected shared dependencies may include:
+
+• typescript
+• zod
+• yaml
+• execa or Node child process wrapper
+• gsap if DOM/GSAP execution is used
+• remotion packages if Remotion adapter is active
+• HyperFrames package or CLI dependency after verification
+
+npm workspaces policy
+
+Use npm workspaces only where a local package boundary is genuinely useful.
+
+Examples:
+
+text
+runtimes/hyperframes/package.json
+runtimes/remotion/package.json
+core/package.json
+
+
+Do not create package boundaries merely for folder organization.
+
+Node resolution strategy
+
+Node’s documented module resolution allows a file in:
+
+text
+projects/acme-project/source/foo.ts
+
+
+to resolve packages from:
+
+text
+MOTION-STUDIO/node_modules
+
+
+because Node searches upward through parent directories.
+
+Therefore projects can import shared dependencies without local installs.
+
+Project-specific dependency exceptions
+
+A project may require an exception only if:
+
+1. a renderer requires an incompatible version;
+2. a native module cannot be shared;
+3. a client-specific integration requires isolation.
+
+Exception format:
+
+yaml
+# projects/<project>/overrides/dependencies.yaml
+schemaVersion: 1
+kind: DependencyOverride
+project: acme-premium-opening
+reason: "Client requires pinned remotion version for legacy template."
+override:
+  package: remotion
+  mode: isolated
+  location: runtimes/remotion-client-acme
+
+
+The default remains shared dependencies.
+
+Preflight dependency policy
+
+Do not run destructive install commands automatically.
+
+Forbidden as routine preflight:
+
+bash
+npm ci
+rm -rf node_modules
+
+
+Allowed read-only checks:
+
+bash
+node -v
+npm -v
+npm ls --depth=0
+
+
+Repair only when explicitly approved:
+
+bash
+npm install --no-audit --no-fund --prefer-offline
+
+
+If lockfile mismatch is detected:
+
+1. report mismatch
+2. show affected packages
+3. require human approval before modifying lockfile
+4. use npm install --package-lock-only only after approval
+
+───
+
+AGENT ARCHITECTURE
+
+Do not instantiate a swarm by default.
+
+Use:
+
+text
+task graph
++
+capability matching
++
+dependency analysis
++
+parallel execution
+
+
+The minimum useful agent set is below.
+
+Agent roles
+
+
+Agent
+Responsibility
+Primary outputs
+Permissions
+Model class
+
+orchestrator
+Receives request, inspects context, builds task graph, dispatches agents
+task-graph.yaml, run ledger
+read, task, limited bash
+high-reasoning
+
+preflight
+Checks environment, dependencies, binaries, renderer availability
+preflight.json
+read, bash
+fast/technical
+
+creative-director
+Converts brief into creative direction and scene plan
+creative-direction.yaml, scene-plan.yaml
+read, artifact write
+high-reasoning
+
+reference-analyst
+Analyzes images/videos/references
+reference-analysis.yaml
+read, vision, artifact write
+vision/high
+
+style-analyst
+Extracts client/studio style constraints
+style-profile.yaml
+read, artifact write
+high-reasoning
+
+art-director
+Resolves composition, hierarchy, visual emphasis
+art-direction.yaml
+read, artifact write
+high/vision
+
+motion-designer
+Converts direction into MotionSpec
+motion-spec.yaml
+read, artifact write
+high-reasoning
+
+motion-ir-compiler
+Resolves MotionSpec into Motion IR
+motion-ir.yaml
+read, artifact write
+coding/high
+
+implementer
+Writes renderer source from Motion IR
+source files
+read, edit, bash
+coding-primary
+
+renderer-specialist
+Handles renderer quirks, capabilities, compile errors
+renderer reports
+read, edit, bash
+coding-primary
+
+technical-qa
+Validates schemas, files, dependencies, render output
+technical-qa.json
+read, bash
+technical
+
+temporal-qa
+Checks timing, beats, pacing, collisions
+temporal-qa.json
+read, vision/ffmpeg
+mid/vision
+
+visual-qa
+Checks hierarchy, readability, composition
+visual-qa.json
+read, vision
+vision
+
+motion-critic
+Provides creative critique and revision hypothesis
+critique.md, revision-request.yaml
+read
+high/vision
+
+asset-manager
+Validates assets, fonts, images, references
+asset-manifest.json
+read, bash
+fast
+
+knowledge-curator
+Proposes/promotes lessons
+lesson.yaml
+controlled knowledge write
+high
+
+
+
+Agent instantiation policy
+
+Agents may be:
+
+• persistent studio agents
+• project-scoped agents
+• task-scoped ephemeral agents
+
+Do not create agents unless a task requires them.
+
+Agent communication
+
+Agents must communicate through artifacts.
+
+Allowed:
+
+text
+research.json
+reference-analysis.yaml
+style-profile.yaml
+scene-plan.yaml
+motion-spec.yaml
+motion-ir.yaml
+task-graph.yaml
+asset-manifest.json
+qa-report.json
+critique.md
+decision.json
+lesson.yaml
+
+
+Forbidden:
+
+• relying on private conversational memory as the only record
+• writing unstructured summaries as final production state
+• mutating another agent’s artifact without a recorded decision
+
+───
+
+TASK GRAPH
+
+Production is represented as a dependency graph.
+
+Default pipeline
+
+text
+brief
+├── research
+├── reference-analysis
+└── client-style-lookup
+        ↓
+  creative-direction
+        ↓
+    scene-plan
+   ┌────┼────┐
+   ↓    ↓    ↓
+assets motion typography
+   └────┼────┘
+        ↓
+    motion-spec
+        ↓
+     motion-ir
+        ↓
+  renderer-selection
+        ↓
+   implementation
+        ↓
+      render
+        ↓
+   technical QA
+        ↓
+   temporal QA
+        ↓
+    visual QA
+        ↓
+   creative critique
+        ↓
+   human checkpoint
+        ↓
+    revision
+        ↓
+   final render
+        ↓
+    delivery
+
+
+Independent nodes run concurrently.
+
+Dependent nodes wait.
+
+Agents editing the same artifact simultaneously are forbidden unless a merge strategy is explicitly defined.
+
+Task graph artifact
+
+yaml
+schemaVersion: 1
+kind: TaskGraph
+id: tg-acme-premium-opening-001
+project: acme-premium-opening
+createdAt: 2026-06-15T00:00:00Z
+tasks:
+  - id: T-010-reference-analysis
+    agent: reference-analyst
+    modelClass: visual-analysis
+    dependsOn: []
+    inputs:
+      - projects/acme-premium-opening/references/hero-opening.mp4
+    outputs:
+      - projects/acme-premium-opening/references/reference-analysis.yaml
+    permissions:
+      read: true
+      edit: false
+      bash: false
+      web: false
+    validation:
+      schema: core/schemas/reference-analysis.schema.ts
+    completion:
+      artifactExists: true
+      schemaValid: true
+
+  - id: T-020-motion-spec
+    agent: motion-designer
+    modelClass: creative-reasoning
+    dependsOn:
+      - T-010-reference-analysis
+    inputs:
+      - projects/acme-premium-opening/references/reference-analysis.yaml
+      - clients/acme/style/style-profile.yaml
+    outputs:
+      - projects/acme-premium-opening/motion/motion-spec.yaml
+    validation:
+      schema: core/schemas/motion-spec.schema.ts
+
+
+Task states
+
+text
+pending
+blocked
+running
+waiting_human
+failed
+retrying
+completed
+rejected
+
+
+Critical path awareness
+
+The orchestrator must identify:
+
+• longest dependency chain
+• parallelizable nodes
+• expensive nodes
+• human checkpoints
+• likely failure points
+
+───
+
+MODEL ROUTING
+
+LongCat-2 is the preferred primary coding model where available.
+
+The system remains model-agnostic.
+
+Task classes
+
+
+Task class
+Model policy
+
+creative reasoning
+strongest available reasoning model
+
+visual analysis
+vision-capable high-reasoning model
+
+architecture
+strongest reasoning model
+
+coding implementation
+coding-optimized model, preferably LongCat-2
+
+simple transformation
+cheap/fast model
+
+QA structural/technical
+mid-tier technical model
+
+visual QA
+vision-capable model
+
+critique
+high-reasoning model, optionally vision-capable
+
+knowledge curation
+high-reasoning model with conservative write permission
+
+
+
+Model policy artifact
+
+yaml
+schemaVersion: 1
+kind: ModelRoutingPolicy
+defaults:
+  primaryCoding: longcat-2
+  fallbackCoding: best-available-coding
+  highReasoning: best-available-reasoning
+  fast: best-available-fast
+  vision: best-available-vision
+
+policies:
+  - taskClass: creative_reasoning
+    require:
+      reasoning: high
+    prefer:
+      - best-available-reasoning
+
+  - taskClass: visual_analysis
+    require:
+      vision: true
+    prefer:
+      - best-available-vision
+
+  - taskClass: coding
+    prefer:
+      - longcat-2
+    fallback:
+      - best-available-coding
+
+  - taskClass: simple_transformation
+    prefer:
+      - best-available-fast
+
+
+OmniRoute policy
+
+OmniRoute-connected APIs are treated as a provider/model pool.
+
+Do not hardcode OmniRoute internals without verification.
+
+The routing layer should query available models where possible and cache:
+
+text
+model id
+provider
+capabilities
+context window
+vision support
+cost estimate
+rate limits
+
+
+If unavailable, use static configuration with explicit warnings.
+
+───
+
+KNOWLEDGE ARCHITECTURE
+
+Knowledge is separated by scope.
+
+text
+studio knowledge
+client knowledge
+project knowledge
+task context
+
+
+Studio knowledge
+
+text
+studio/knowledge/
+├── doctrine/
+│   ├── motion-principles.md
+│   ├── typography.md
+│   ├── camera.md
+│   ├── compositing.md
+│   └── restraint.md
+├── validated/
+│   ├── premium-restrained-overshoot.yaml
+│   └── type-attack-under-8-frames.yaml
+├── candidate/
+├── deprecated/
+└── indexes/
+
+
+Client knowledge
+
+text
+clients/acme/knowledge/
+├── validated/
+├── candidate/
+└── deprecated/
+
+
+Project knowledge
+
+text
+projects/acme-premium-opening/knowledge/
+├── decisions/
+├── candidate/
+└── validated/
+
+
+Lesson schema
+
+yaml
+schemaVersion: 1
+kind: Lesson
+id: lesson-acme-no-heavy-overshoot
+status: candidate | validated | deprecated
+scope: studio | client | project | renderer
+target: acme
+statement: "Acme consistently rejects heavy overshoot on primary typography."
+evidence:
+  - project: acme-premium-opening
+    shot: shot-001
+    artifact: qa/creative-qa.md
+    date: 2026-06-15
+    result: human-rejected-heavy-overshoot
+confidence: 0.8
+provenance:
+  createdBy: motion-critic
+  reviewedBy: human
+  promotedBy: null
+
+
+Knowledge rules
+
+1. Agents may propose lessons.
+2. Agents may not directly promote lessons.
+3. Promotion requires evidence.
+4. Client lessons do not become studio lessons automatically.
+5. Project lessons do not become client lessons automatically.
+6. Deprecated knowledge remains readable but inactive.
+
+───
+
+CLIENT ARCHITECTURE
+
+Clients are persistent entities.
+
+Client directory
+
+text
+clients/
+└── acme/
+    ├── client.yaml
+    ├── profile.md
+    ├── brand/
+    │   ├── colors.yaml
+    │   ├── typography.yaml
+    │   ├── logo/
+    │   └── usage-rules.md
+    ├── motion-language/
+    │   ├── motion-identity.yaml
+    │   ├── pacing.yaml
+    │   ├── camera.yaml
+    │   └── transitions.yaml
+    ├── style/
+    │   ├── style-profile.yaml
+    │   ├── approved-work.md
+    │   └── rejected-work.md
+    ├── references/
+    ├── anti-references/
+    ├── assets/
+    ├── knowledge/
+    └── history/
+
+
+Client profile schema
+
+yaml
+schemaVersion: 1
+kind: ClientProfile
+id: acme
+name: Acme
+industry: technology
+brand:
+  primaryColors:
+    - "#0A0B0D"
+    - "#F5F7FA"
+  accentColors:
+    - "#FF5D3A"
+  typography:
+    headline: "Inter Tight"
+    body: "Inter"
+motionIdentity:
+  energy: restrained
+  precision: high
+  density: low-medium
+  camera: subtle
+  overshoot: controlled
+  transitions: directional
+antiPatterns:
+  - excessive glow
+  - random particles
+  - aggressive elastic type
+  - constant camera drift
+preferences:
+  approvals:
+    - premium minimal openings
+    - strong typography
+  rejections:
+    - broad cartoon overshoot
+
+
+Inheritance
+
+New project inherits:
+
+text
+studio defaults
+→ client defaults
+→ project overrides
+
+
+Project overrides must not mutate client defaults unless explicitly promoted.
+
+───
+
+PROJECT ARCHITECTURE
+
+All projects derive from a canonical template.
+
+Project directory
+
+text
+projects/
+└── acme-premium-opening/
+    ├── project.yaml
+    ├── README.md
+    ├── brief/
+    │   ├── client-brief.md
+    │   └── interpreted-brief.yaml
+    ├── creative/
+    │   ├── creative-direction.yaml
+    │   └── scene-plan.yaml
+    ├── style/
+    │   ├── style-profile.yaml
+    │   └── style-decisions.md
+    ├── references/
+    │   ├── raw/
+    │   └── reference-analysis.yaml
+    ├── assets/
+    │   ├── fonts/
+    │   ├── images/
+    │   ├── video/
+    │   └── asset-manifest.json
+    ├── source/
+    │   ├── scenes/
+    │   ├── components/
+    │   └── renderer/
+    ├── motion/
+    │   ├── motion-spec.yaml
+    │   └── motion-ir.yaml
+    ├── generated/
+    │   ├── hyperframes/
+    │   ├── remotion/
+    │   └── fusion/
+    ├── renders/
+    ├── previews/
+    ├── qa/
+    │   ├── preflight.json
+    │   ├── technical-qa.json
+    │   ├── structural-qa.json
+    │   ├── temporal-qa.json
+    │   ├── visual-qa.json
+    │   └── creative-qa.md
+    ├── reports/
+    ├── decisions/
+    │   └── decision-log.jsonl
+    ├── logs/
+    ├── knowledge/
+    └── overrides/
+
+
+Project configuration
+
+yaml
+schemaVersion: 1
+kind: Project
+id: acme-premium-opening
+client: acme
+status: active
+createdAt: 2026-06-15
+delivery:
+  width: 1920
+  height: 1080
+  fps: 30
+  format: mp4
+seed: 884213
+rendererPreference:
+  primary: hyperframes
+  fallback: gsap-dom
+overrides:
+  dependencies: none
+  style: none
+  pipeline: default
+
+
+───
+
+MOTIONSPEC
+
+MotionSpec is the structured creative contract.
+
+It is not renderer-specific.
+
+It is not a raw keyframe list.
+
+It expresses:
+
+• intent
+• hierarchy
+• beats
+• objects
+• relationships
+• motion characteristics
+• constraints
+• negative instructions
+• style
+
+MotionSpec V2 schema, condensed TypeScript
+
+ts
+export type MotionSeverity =
+  | "none"
+  | "subtle"
+  | "low"
+  | "medium"
+  | "strong"
+  | "high";
+
+export type MotionTempo =
+  | "very-slow"
+  | "slow"
+  | "medium"
+  | "fast"
+  | "very-fast";
+
+export type MotionEnergy =
+  | "restrained"
+  | "balanced"
+  | "dynamic"
+  | "aggressive";
+
+export interface TimeRef {
+  frame?: number;
+  second?: number;
+  percent?: number;
+  beatId?: string;
+  relativeTo?: string;
+  offsetFrames?: number;
+  offsetSeconds?: number;
+}
+
+export interface DurationRef {
+  frames?: number;
+  seconds?: number;
+  percent?: number;
+}
+
+export interface Beat {
+  id: string;
+  type:
+    | "story"
+    | "audio"
+    | "visual"
+    | "impact"
+    | "anticipation"
+    | "transition"
+    | "hold";
+  at: TimeRef;
+  duration?: DurationRef;
+  weight?: number;
+  description: string;
+}
+
+export interface SemanticObject {
+  id: string;
+  role:
+    | "primary_information"
+    | "secondary_information"
+    | "tertiary_information"
+    | "environment"
+    | "camera"
+    | "transition"
+    | "brand"
+    | "data";
+  type:
+    | "text"
+    | "shape"
+    | "image"
+    | "video"
+    | "group"
+    | "camera"
+    | "layer";
+  label?: string;
+  content?: string;
+  styleRef?: string;
+  layout?: {
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+    align?: "left" | "center" | "right";
+    zIndex?: number;
+  };
+}
+
+export interface RelationshipIntent {
+  id: string;
+  leader: string;
+  follower: string;
+  kind:
+    | "follows"
+    | "reacts"
+    | "counterbalances"
+    | "echoes"
+    | "parent_child"
+    | "constrained_by"
+    | "independent";
+  delay?: DurationRef;
+  strength?: number;
+  notes?: string;
+}
+
+export interface MotionEventIntent {
+  id: string;
+  target: string;
+  semanticRole?: string;
+  trigger: {
+    beatId?: string;
+    after?: string;
+    time?: TimeRef;
+  };
+  behavior: {
+    anticipation?: MotionSeverity;
+    impact?: MotionSeverity;
+    compression?: MotionSeverity;
+    overshoot?: MotionSeverity;
+    settle?: MotionSeverity;
+    drift?: MotionSeverity;
+  };
+  timing: {
+    attack?: MotionTempo;
+    recovery?: MotionTempo;
+    settle?: MotionTempo;
+    hold?: DurationRef;
+  };
+  relationships?: Record<
+    string,
+    {
+      response:
+        | "delayed_secondary"
+        | "subtle_reactive"
+        | "counter_motion"
+        | "echo"
+        | "absorb";
+      delay?: DurationRef;
+      strength?: number;
+    }
+  >;
+  style?: {
+    energy?: MotionEnergy;
+    precision?: number;
+    restraint?: number;
+  };
+}
+
+export interface MotionSpecV2 {
+  schemaVersion: 2;
+  kind: "MotionSpec";
+  id: string;
+  project: string;
+  client?: string;
+  intent: {
+    purpose: string;
+    message: string;
+    emotion?: string;
+    audience?: string;
+  };
+  canvas: {
+    width: number;
+    height: number;
+    fps: number;
+    duration: DurationRef;
+    safeAreaPercent?: number;
+  };
+  style: {
+    energy: MotionEnergy;
+    restraint: number;
+    precision: number;
+    density: number;
+    motionLanguage?: string[];
+    antiPatterns?: string[];
+  };
+  beats: Beat[];
+  objects: SemanticObject[];
+  relationships: RelationshipIntent[];
+  events: MotionEventIntent[];
+  constraints: string[];
+  negative: { rule: string; reason: string }[];
+  expectedOutput: {
+    codec?: string;
+    container?: string;
+    alpha?: boolean;
+    notes?: string;
+  };
+  rendererPreference?: {
+    primary: "hyperframes" | "gsap-dom" | "remotion" | "fusion" | "resolve";
+    fallback?: string;
+  };
+}
+
+
+Example MotionSpec
+
+yaml
+schemaVersion: 2
+kind: MotionSpec
+id: acme-opening-shot-001
+project: acme-premium-opening
+client: acme
+
+intent:
+  purpose: "Open with premium restrained brand statement."
+  message: "Precision motion system."
+  emotion: "confident, restrained, high-end"
+
+canvas:
+  width: 1920
+  height: 1080
+  fps: 30
+  duration:
+    seconds: 6
+
+style:
+  energy: restrained
+  restraint: 0.85
+  precision: 0.9
+  density: 0.35
+  motionLanguage:
+    - premium
+    - controlled
+    - typographic
+  antiPatterns:
+    - excessive glow
+    - random particles
+    - broad overshoot
+
+beats:
+  - id: beat-establish
+    type: visual
+    at:
+      second: 0
+    duration:
+      second: 0.8
+    weight: 0.3
+    description: "Establish dark field and subtle texture."
+
+  - id: beat-title-impact
+    type: impact
+    at:
+      second: 1.1
+    weight: 0.9
+    description: "Primary title lands with controlled weight."
+
+  - id: beat-type-breathe
+    type: hold
+    at:
+      second: 2.4
+    duration:
+      second: 1.6
+    weight: 0.5
+    description: "Typography holds and breathes."
+
+objects:
+  - id: title
+    role: primary_information
+    type: text
+    content: "PRECISION MOTION"
+    layout:
+      align: left
+      zIndex: 30
+
+  - id: underline
+    role: secondary_information
+    type: shape
+    layout:
+      zIndex: 20
+
+  - id: background
+    role: environment
+    type: shape
+    layout:
+      zIndex: 0
+
+  - id: camera
+    role: camera
+    type: camera
+
+relationships:
+  - id: underline-follows-title
+    leader: title
+    follower: underline
+    kind: follows
+    delay:
+      frames: 3
+    strength: 0.65
+
+  - id: background-reacts-title
+    leader: title
+    follower: background
+    kind: reacts
+    strength: 0.2
+
+  - id: camera-absorbs-title
+    leader: title
+    follower: camera
+    kind: reacts
+    strength: 0.3
+
+events:
+  - id: title-impact
+    target: title
+    semanticRole: primary_information
+    trigger:
+      beatId: beat-title-impact
+    behavior:
+      anticipation: medium
+      impact: strong
+      compression: high
+      overshoot: controlled
+      settle: soft
+    timing:
+      attack: fast
+      recovery: medium
+      settle: medium
+    style:
+      energy: restrained
+      precision: high
+
+  - id: underline-response
+    target: underline
+    trigger:
+      after: title-impact
+    behavior:
+      impact: low
+      overshoot: subtle
+      settle: soft
+    timing:
+      attack: medium
+      recovery: medium
+
+  - id: background-response
+    target: background
+    trigger:
+      after: title-impact
+    behavior:
+      impact: subtle
+      drift: subtle
+    timing:
+      attack: slow
+      recovery: slow
+
+constraints:
+  - "Keep composition unchanged."
+  - "Maintain client restraint profile."
+  - "No new decorative elements."
+
+negative:
+  - rule: "No glow stronger than subtle accent emphasis."
+    reason: "Client rejects generic AI glow."
+  - rule: "No randomized flicker."
+    reason: "Determinism."
+
+
+───
+
+MOTION IR
+
+Motion IR is the canonical resolved representation.
+
+It is still renderer-independent, but it is more machine-executable than MotionSpec.
+
+It resolves:
+
+• beats into frames
+• durations into frames
+• relationships into delays/constraints
+• semantic behavior into curve profiles
+• objects into scene graph nodes
+• constraints into warnings and guards
+
+Motion IR schema, condensed TypeScript
+
+ts
+export interface MotionIRTimeline {
+  fps: number;
+  width: number;
+  height: number;
+  durationFrames: number;
+  seed: number;
+}
+
+export interface ResolvedBeat {
+  id: string;
+  type: string;
+  startFrame: number;
+  endFrame: number;
+  weight: number;
+}
+
+export interface SceneNode {
+  id: string;
+  parentId?: string;
+  kind:
+    | "text"
+    | "shape"
+    | "image"
+    | "video"
+    | "group"
+    | "camera";
+  transform: {
+    x: number;
+    y: number;
+    scaleX: number;
+    scaleY: number;
+    rotation: number;
+    opacity: number;
+  };
+  style: Record<string, unknown>;
+  zIndex: number;
+}
+
+export interface MotionSemantics {
+  acceleration: number;
+  deceleration: number;
+  anticipation: number;
+  impact: number;
+  compression: number;
+  overshoot: number;
+  damping: number;
+  stiffness: number;
+  softness: number;
+  snap: number;
+  continuity: number;
+}
+
+export interface ResolvedCurve {
+  type:
+    | "gsap-ease"
+    | "cubic-bezier"
+    | "spring"
+    | "keyframe-spline"
+    | "custom-function";
+  value: string | number[] | Record<string, number>;
+  notes?: string;
+}
+
+export interface MotionCurve {
+  id: string;
+  semantic: MotionSemantics;
+  resolved: ResolvedCurve;
+}
+
+export interface ResolvedKeyframe {
+  frame: number;
+  value: number | string;
+  curveId?: string;
+}
+
+export interface PropertyAnimation {
+  property:
+    | "x"
+    | "y"
+    | "scaleX"
+    | "scaleY"
+    | "rotation"
+    | "opacity"
+    | "clip"
+    | "filter"
+    | string;
+  keyframes?: ResolvedKeyframe[];
+  curveId?: string;
+  generator?:
+    | "spring"
+    | "follow"
+    | "stagger"
+    | "expression"
+    | "keyframes";
+  params?: Record<string, unknown>;
+}
+
+export interface ResolvedMotion {
+  id: string;
+  eventId?: string;
+  target: string;
+  beatIds: string[];
+  properties: PropertyAnimation[];
+}
+
+export interface ResolvedRelationship {
+  id: string;
+  leader: string;
+  follower: string;
+  kind: string;
+  delayFrames: number;
+  strength: number;
+  implementationHint?: string;
+}
+
+export interface MotionIRV1 {
+  schemaVersion: 1;
+  kind: "MotionIR";
+  source: {
+    motionSpecId: string;
+    motionSpecHash: string;
+    generatedBy: string;
+    generatedAt: string;
+  };
+  timeline: MotionIRTimeline;
+  beatMap: ResolvedBeat[];
+  sceneGraph: SceneNode[];
+  curves: MotionCurve[];
+  motions: ResolvedMotion[];
+  relationships: ResolvedRelationship[];
+  assets: {
+    id: string;
+    type: string;
+    path: string;
+    required: boolean;
+  }[];
+  fonts: {
+    id: string;
+    family: string;
+    source: string;
+  }[];
+  determinism: {
+    logical: boolean;
+    rendering: "controlled" | "environment-dependent";
+    pixelGuaranteed: boolean;
+    notes: string[];
+  };
+  diagnostics: {
+    assumptions: string[];
+    warnings: string[];
+  };
+}
+
+
+Curve resolution process
+
+The curve resolver must not use a fixed map like:
+
+text
+cinematic → power3.inOut
+
+
+Instead:
+
+text
+MotionSpec behavior
+→ normalized semantic values
+→ attack/recovery envelope
+→ overshoot/settle model
+→ renderer capability check
+→ resolved curve implementation
+
+
+Example:
+
+yaml
+behavior:
+  anticipation: medium
+  impact: strong
+  compression: high
+  overshoot: controlled
+  settle: soft
+
+semantic:
+  acceleration: 0.78
+  deceleration: 0.62
+  anticipation: 0.45
+  impact: 0.82
+  compression: 0.74
+  overshoot: 0.35
+  damping: 0.68
+  stiffness: 0.56
+  softness: 0.48
+  snap: 0.41
+  continuity: 0.72
+
+
+The resolver may produce:
+
+• GSAP keyframes
+• GSAP standard ease
+• cubic-bezier
+• spring parameters
+• renderer spline data
+
+depending on renderer capabilities.
+
+If the renderer cannot express the curve faithfully, the IR must record a warning and choose the closest stable approximation.
+
+Relationship resolution
+
+Example:
+
+yaml
+relationships:
+  - leader: title
+    follower: underline
+    kind: follows
+    delayFrames: 3
+    strength: 0.65
+
+  - leader: title
+    follower: camera
+    kind: reacts
+    delayFrames: 1
+    strength: 0.3
+
+
+Implementation hints may include:
+
+text
+underline: delayed secondary tween
+camera: subtle scale/position absorption
+background: low-opacity/parallax reaction
+
+
+The renderer adapter decides the exact mechanism.
+
+───
+
+RENDERER CONTRACTS
+
+All renderers implement an adapter contract.
+
+ts
+export interface RendererCapabilities {
+  id: string;
+  name: string;
+  supports: {
+    d2: boolean;
+    d3: boolean;
+    dom: boolean;
+    svg: boolean;
+    react: boolean;
+    nodes: boolean;
+    expressions: boolean;
+    splines: boolean;
+    particles: boolean;
+    camera: boolean;
+    dataDriven: boolean;
+    deterministicSeek: boolean;
+    alpha: boolean;
+    audio: boolean;
+  };
+  maturity: "production" | "beta" | "stub";
+}
+
+export interface PreflightResult {
+  ok: boolean;
+  warnings: string[];
+  errors: string[];
+  version?: string;
+  capabilities?: RendererCapabilities;
+}
+
+export interface CompilationResult {
+  ok: boolean;
+  outputDir: string;
+  entrypoint?: string;
+  warnings: string[];
+  artifacts: string[];
+}
+
+export interface RenderResult {
+  ok: boolean;
+  outputFiles: string[];
+  logs: string[];
+  warnings: string[];
+  deterministicNotes: string[];
+}
+
+export interface RendererAdapter {
+  id: string;
+  capabilities(): RendererCapabilities;
+  preflight(): Promise<PreflightResult>;
+  compile(ir: MotionIRV1, projectDir: string): Promise<CompilationResult>;
+  render(compiled: CompilationResult): Promise<RenderResult>;
+  inspect(render: RenderResult): Promise<Record<string, unknown>>;
+}
+
+
+Renderer selection
+
+Renderer selection uses:
+
+1. MotionSpec renderer preference
+2. renderer capabilities
+3. project overrides
+4. client style constraints
+5. availability from preflight
+6. historical stability from knowledge base
+
+Do not select a renderer merely because it is available.
+
+───
+
+HYPERFRAMES
+
+Role
+
+HyperFrames is the first production renderer.
+
+It owns:
+
+• HTML/CSS/media-to-video rendering
+• deterministic seek/render pipeline where supported
+• CLI-based preview/render/lint where available
+• browser/FFmpeg execution details
+
+Our studio owns:
+
+• creative semantics
+• MotionSpec
+• Motion IR
+• style intelligence
+• renderer selection
+• QA
+• knowledge
+
+Integration rule
+
+Do not reimplement HyperFrames.
+
+text
+Motion IR
+    ↓
+HyperFrames adapter
+    ↓
+real HyperFrames project/files
+    ↓
+HyperFrames CLI
+    ↓
+MP4 / preview / lint output
+
+
+Capability probe
+
+Before first use, OpenCode must run:
+
+text
+runtimes/hyperframes/capability-probe.ts
+
+
+The probe must discover:
+
+• installed HyperFrames version
+• CLI existence
+• available commands
+• init command
+• preview command
+• render command
+• lint command
+• output options
+• configuration file format
+• deterministic flags if available
+
+The probe writes:
+
+text
+runtimes/hyperframes/capability-report.json
+
+
+Do not hardcode unverified CLI flags in production code.
+
+HyperFrames adapter behavior
+
+The adapter must:
+
+1. read Motion IR
+2. generate a HyperFrames-compatible scene under:
+
+text
+projects/<project>/generated/hyperframes/<shot>/
+
+
+1. write deterministic assets: 
+◦ HTML/CSS
+◦ scene script
+◦ asset manifest
+◦ seed config
+
+1. invoke HyperFrames through verified CLI surface
+
+1. collect: 
+◦ render output
+◦ logs
+◦ warnings
+◦ lint output
+
+Determinism rules for HyperFrames
+
+Generated scenes must:
+
+• use seed-based randomness only
+• avoid Math.random()
+• avoid Date.now()
+• avoid timers for animation logic
+• use frame/beat-driven animation
+• declare fonts explicitly
+• use local assets
+• record renderer version and dependency versions
+
+Fallback
+
+If HyperFrames is unavailable after capability probe:
+
+1. stop production
+2. produce deviation report
+3. optionally use legacy internal renderer only if explicitly approved
+
+Do not silently fall back to a different renderer.
+
+───
+
+GSAP
+
+GSAP is not the source of truth.
+
+GSAP is an execution capability.
+
+Use GSAP where:
+
+• DOM/GSAP choreography is needed
+• timeline control is valuable
+• HyperFrames-generated scenes benefit from GSAP animation
+• complex stagger/overlap/follow-through is needed
+
+GSAP integration must go through the curve resolver.
+
+Forbidden:
+
+text
+MotionSpec creative word → direct GSAP ease string
+
+
+Required:
+
+text
+MotionSpec behavior
+→ semantic curve
+→ GSAP-compatible curve/keyframes
+
+
+GSAP timelines generated by the studio must be:
+
+• paused
+• seekable
+• deterministic
+• frame-resolved
+• constructed from Motion IR
+
+───
+
+REMOTION
+
+Remotion remains a valid renderer adapter, but it is not the universal default.
+
+Use Remotion when:
+
+• content is data-driven
+• components repeat structurally
+• React component reuse is valuable
+• props determine layout/content
+• template variants are required
+
+Do not choose Remotion solely because React is familiar.
+
+Remotion adapter rule
+
+text
+Motion IR
+    ↓
+Remotion adapter
+    ↓
+React composition
+    ↓
+Remotion render
+
+
+The adapter should generate:
+
+• composition component
+• props derived from Motion IR
+• deterministic font/asset handling
+• frame-based interpolation
+
+Remotion scenes must remain pure functions of frame and props.
+
+───
+
+FUSION
+
+Fusion is a future production backend, not the first slice.
+
+Fusion is not After Effects.
+
+Do not mechanically translate AE concepts.
+
+Fusion concepts:
+
+text
+Tool
+Input/Parameter
+Modifier/Expression
+Spline/Keyframes
+Node connection
+
+
+Future architecture:
+
+text
+Motion IR
+    ↓
+FusionCompiler
+    ↓
+Fusion node graph
+    ↓
+Fusion composition
+    ↓
+Resolve
+
+
+The FusionCompiler must translate intent into:
+
+• tools
+• node connections
+• modifiers
+• expressions
+• splines
+• keyframes
+• renderable composition
+
+Before implementation:
+
+1. verify official Fusion scripting capabilities
+2. verify current API surface
+3. verify node types relevant to motion graphics
+4. verify determinism limitations
+
+Do not implement Fusion automation without verification.
+
+───
+
+RESOLVE
+
+Resolve is the finishing and delivery environment.
+
+It is not the primary motion authoring engine.
+
+Future architecture:
+
+text
+ResolveController
+├── project
+├── media
+├── timeline
+├── Fusion insertion
+├── render
+└── delivery
+
+
+Resolve may handle:
+
+• final assembly
+• audio
+• grade
+• conform
+• delivery
+• versioning
+• export
+
+Resolve automation must be introduced only after HyperFrames slice is stable.
+
+Do not attempt fragile timeline automation in the first phase.
+
+Initial Resolve integration is file-based:
+
+text
+renders/
+├── shot-001/
+├── shot-002/
+└── shot-003/
+
+
+with naming conventions and metadata.
+
+───
+
+QA
+
+QA has five layers.
+
+1. Technical QA
+
+Checks:
+
+• files exist
+• paths valid
+• assets available
+• schemas valid
+• dependencies available
+• renderer available
+• composition valid
+• render succeeds
+• output exists
+• output format valid
+
+Output:
+
+text
+qa/technical-qa.json
+
+
+2. Structural QA
+
+Checks:
+
+• MotionSpec ↔ Motion IR consistency
+• Motion IR ↔ renderer implementation consistency
+• asset references
+• dependency graph
+• scene graph consistency
+• project structure
+
+Output:
+
+text
+qa/structural-qa.json
+
+
+3. Temporal QA
+
+Checks:
+
+• timing
+• beat alignment
+• pacing
+• holds
+• collisions
+• accidental jumps
+• unwanted pauses
+• excessive motion density
+
+Tools:
+
+• ffprobe
+• frame extraction
+• contact sheets
+• motion difference heuristics
+• optional vision model review
+
+Output:
+
+text
+qa/temporal-qa.json
+
+
+4. Visual QA
+
+Checks:
+
+• hierarchy
+• readability
+• composition
+• typography
+• spacing
+• balance
+• style adherence
+• reference adherence
+
+Visual QA cannot be fully automated.
+
+Use:
+
+• deterministic checks where possible
+• vision model critique as advisory
+• human approval as final
+
+Output:
+
+text
+qa/visual-qa.json
+
+
+5. Creative QA
+
+Checks:
+
+• does it communicate the intended idea?
+• does it feel intentional?
+• does motion hierarchy work?
+• does it have rhythm?
+• does it match client style?
+
+Output:
+
+text
+qa/creative-qa.md
+
+
+QA report schema
+
+yaml
+schemaVersion: 1
+kind: QAReport
+project: acme-premium-opening
+shot: shot-001
+layer: technical | structural | temporal | visual | creative
+status: pass | warn | fail
+issues:
+  - id: issue-001
+    severity: warning | error | fatal
+    message: "Title hold is shorter than requested."
+    evidence:
+      - qa/frames/frame-0084.png
+    suggestedAction: "Increase typography hold by 12 frames."
+
+
+───
+
+PRE-FLIGHT
+
+Preflight must run before creative execution.
+
+Preflight command
+
+bash
+npm run preflight -- --project acme-premium-opening
+
+
+Preflight checks
+
+1. repository integrity
+2. project structure
+3. Node version
+4. package manifest
+5. lockfile presence
+6. shared dependency integrity
+7. required package availability
+8. required binaries
+9. renderer availability
+10. FFmpeg/ffprobe
+11. browser/runtime if needed
+12. API/model availability
+13. credentials/configuration
+14. asset availability
+15. reference availability
+16. project schema validity
+17. client knowledge presence
+18. relevant skills availability
+19. task graph validity
+20. output directories
+21. disk/storage
+22. test harness
+
+Preflight output
+
+text
+projects/<project>/qa/preflight.json
+
+
+Example:
+
+json
+{
+  "schemaVersion": 1,
+  "kind": "PreflightReport",
+  "project": "acme-premium-opening",
+  "status": "warn",
+  "checks": [
+    {
+      "id": "node-version",
+      "status": "pass",
+      "actual": "20.11.1"
+    },
+    {
+      "id": "renderer-hyperframes",
+      "status": "warn",
+      "message": "HyperFrames CLI detected but render flag needs verification."
+    }
+  ],
+  "repairs": []
+}
+
+
+Repair policy
+
+Allowed automatic repairs:
+
+• create missing output directories
+• normalize generated temporary folders
+
+Repairs requiring approval:
+
+• install dependencies
+• modify lockfile
+• modify project structure
+• install binaries
+• change renderer configuration
+
+Never automatically run destructive commands.
+
+───
+
+REVISION
+
+The revision loop preserves the strongest idea from Build.txt.
+
+text
+identify weakness
+↓
+form hypothesis
+↓
+make smallest relevant change
+↓
+preserve unrelated work
+↓
+rerender
+↓
+compare
+↓
+accept/reject
+
+
+Revision request artifact
+
+yaml
+schemaVersion: 1
+kind: RevisionRequest
+project: acme-premium-opening
+shot: shot-001
+humanFeedback: >
+  The opening needs to feel more premium and restrained.
+  Keep the composition but make the impact 20% heavier
+  and let the typography breathe longer.
+interpretation:
+  - path: style.restraint
+    op: increase
+    amount: 0.1
+  - path: events.title-impact.behavior.impact
+    op: increase
+    amount: 0.2
+  - path: beats.beat-type-breathe.duration.seconds
+    op: increase
+    amount: 0.4
+  - path: events.title-impact.timing.recovery
+    op: set
+    value: slower
+constraints:
+  - "Do not change composition."
+  - "Do not add decorative elements."
+
+
+Patch rules
+
+A revision patch must:
+
+1. name the smallest affected artifacts
+2. avoid rewriting the whole scene
+3. preserve unchanged timing
+4. preserve unrelated layout
+5. preserve approved motion
+6. update MotionSpec/Motion IR before renderer code where possible
+7. rerun QA
+8. record decision
+
+If a requested change affects more than 40% of the scene, the system must request a new scene plan instead of silently rewriting.
+
+───
+
+KNOWLEDGE PROMOTION
+
+Knowledge promotion is controlled.
+
+text
+execution
+↓
+result
+↓
+critique
+↓
+candidate lesson
+↓
+evidence
+↓
+validation
+↓
+promotion
+↓
+knowledge base
+
+
+Promotion scopes
+
+text
+project → client → studio
+
+
+A project lesson does not become client knowledge automatically.
+
+A client lesson does not become studio knowledge automatically.
+
+Promotion requirements
+
+A lesson may be promoted only if it has:
+
+• repeated evidence
+• human approval or QA evidence
+• clear scope
+• no contradiction with higher-priority knowledge
+• provenance
+
+Knowledge conflict policy
+
+If knowledge conflicts:
+
+1. project override beats client default for that project
+2. client knowledge beats studio default for that client
+3. validated knowledge beats candidate knowledge
+4. newer validated knowledge may deprecate older knowledge with record
+
+───
+
+OBSERVABILITY
+
+Every project must answer:
+
+• What happened?
+• Which agent did it?
+• Which model?
+• Why?
+• Which tool?
+• Which version?
+• Which input?
+• Which output?
+• What failed?
+• What changed?
+• Why was the change made?
+• What did QA say?
+• What did the human approve?
+
+Run ledger
+
+text
+logs/runs/<run-id>.jsonl
+
+
+Each entry:
+
+json
+{
+  "runId": "run-001",
+  "taskId": "T-020-motion-spec",
+  "agent": "motion-designer",
+  "model": "longcat-2",
+  "provider": "omniroute",
+  "startedAt": "2026-06-15T00:00:00Z",
+  "endedAt": "2026-06-15T00:02:10Z",
+  "status": "completed",
+  "tokens": 12000,
+  "costEstimate": null,
+  "artifacts": [
+    "projects/acme-premium-opening/motion/motion-spec.yaml"
+  ]
+}
+
+
+If exact cost is unavailable, record null.
+
+Do not fabricate cost.
+
+───
+
+SECURITY
+
+Use least privilege.
+
+Permission model
+
+
+Role
+read
+edit
+bash
+web
+task
+knowledge write
+
+orchestrator
+yes
+limited
+limited
+limited
+yes
+no
+
+preflight
+yes
+no
+limited
+no
+no
+no
+
+reference-analyst
+yes
+no
+no
+optional
+no
+no
+
+creative-director
+yes
+artifact-only
+no
+no
+no
+no
+
+implementer
+yes
+yes
+yes
+no
+no
+no
+
+technical-qa
+yes
+no
+limited
+no
+no
+no
+
+visual-qa
+yes
+no
+no
+no
+no
+no
+
+motion-critic
+yes
+no
+no
+no
+no
+no
+
+knowledge-curator
+yes
+knowledge-only
+no
+no
+no
+controlled
+
+
+
+Secrets
+
+Secrets must not be committed.
+
+Use environment variables or OpenCode secure configuration.
+
+External web access
+
+Only research agents may use web access.
+
+Implementation agents should not require web access unless explicitly fetching verified documentation.
+
+───
+
+TESTING
+
+The studio needs acceptance tests.
+
+1. Bootstrap test
+
+Fresh studio → working environment.
+
+Pass condition:
+
+bash
+npm run preflight
+
+
+passes.
+
+2. Project creation test
+
+New client/project → canonical structure.
+
+Pass condition:
+
+• project tree exists
+• project.yaml validates
+• client profile attached
+• template not mutated
+
+3. Dependency test
+
+Multiple projects → one shared dependency tree.
+
+Pass condition:
+
+• no project-level node_modules by default
+• shared imports resolve
+• preflight passes
+
+4. Agent selection test
+
+Task → correct agents selected.
+
+Pass condition:
+
+• task graph assigns expected agent classes
+• permissions are valid
+
+5. Parallelism test
+
+Independent tasks → concurrent execution.
+
+Pass condition:
+
+• independent task nodes run concurrently where supported
+• dependent nodes wait
+
+6. Dependency ordering test
+
+Dependent tasks → correct ordering.
+
+Pass condition:
+
+• no task consumes missing artifact
+• task graph completes
+
+7. MotionSpec test
+
+Creative description → valid MotionSpec.
+
+Pass condition:
+
+• schema validates
+• beats/events/relationships present
+• no renderer-specific implementation details
+
+8. Motion IR test
+
+MotionSpec → valid Motion IR.
+
+Pass condition:
+
+• beats resolved to frames
+• relationships resolved
+• curves resolved
+• warnings recorded where approximation occurred
+
+9. Renderer test
+
+Motion IR → valid HyperFrames implementation.
+
+Pass condition:
+
+• generated files exist
+• adapter compiles without errors
+• lint/preflight pass where available
+
+10. Render test
+
+Implementation → deterministic render.
+
+Pass condition:
+
+• output file exists
+• ffprobe metadata matches spec
+• render logs recorded
+
+11. QA test
+
+Intentional defect → QA detects it.
+
+Pass condition:
+
+• missing asset detected
+• invalid schema detected
+• forbidden randomness detected
+• timing overflow detected
+
+12. Revision test
+
+Human critique → localized revision.
+
+Pass condition:
+
+• revision modifies smallest relevant artifacts
+• unrelated motion remains unchanged
+• rerender succeeds
+
+13. Knowledge test
+
+Validated lesson → correct scope.
+
+Pass condition:
+
+• candidate lesson not active until promoted
+• promoted lesson has provenance
+
+14. Regression test
+
+Old approved project → still reproduces after architecture changes.
+
+Pass condition:
+
+• old MotionSpec/Motion IR still validate or migrate
+• render output remains logically equivalent
+
+───
+
+IMPLEMENTATION PHASES
+
+The phases below are recommended.
+
+PHASE 0 — Verification and foundation
+
+Goals:
+
+• verify OpenCode capabilities
+• verify HyperFrames CLI
+• verify npm/Node strategy
+• verify FFmpeg
+• create root repository
+• create dependency preflight
+
+Exit:
+
+• capability reports exist
+• root preflight passes
+
+PHASE 1 — Studio/client/project structure
+
+Goals:
+
+• studio config
+• client templates
+• project templates
+• artifact directories
+• decision logs
+
+Exit:
+
+• create client/project works
+
+PHASE 2 — OpenCode agent architecture
+
+Goals:
+
+• agent definitions
+• permissions
+• model routing
+• skills loading
+
+Exit:
+
+• OpenCode can dispatch a simple task with correct permissions
+
+PHASE 3 — Preflight/task graph/artifacts
+
+Goals:
+
+• task graph schema
+• task runner
+• artifact validation
+• run ledger
+
+Exit:
+
+• simple DAG executes
+
+PHASE 4 — MotionSpec/Motion IR
+
+Goals:
+
+• MotionSpec schema
+• Motion IR schema
+• beat resolver
+• relationship resolver
+• curve resolver
+
+Exit:
+
+• creative instruction produces valid MotionSpec and Motion IR
+
+PHASE 5 — HyperFrames renderer
+
+Goals:
+
+• HyperFrames capability probe
+• Motion IR → HyperFrames adapter
+• render runner
+• deterministic output
+
+Exit:
+
+• one shot renders through real HyperFrames
+
+PHASE 6 — QA/critique/revision
+
+Goals:
+
+• technical QA
+• structural QA
+• temporal QA
+• visual QA advisory
+• critique loop
+• localized revision
+
+Exit:
+
+• human feedback produces targeted patch
+
+PHASE 7 — Knowledge promotion
+
+Goals:
+
+• candidate lessons
+• evidence model
+• promotion workflow
+• scoped knowledge loading
+
+Exit:
+
+• validated lesson influences future work without polluting global defaults
+
+PHASE 8 — GSAP/Remotion expansion
+
+Goals:
+
+• GSAP execution adapter
+• Remotion adapter
+• renderer selection policy
+
+Exit:
+
+• data-driven Remotion shot and GSAP-heavy shot both work
+
+PHASE 9 — Fusion/Resolve backend
+
+Goals:
+
+• verify Fusion/Resolve APIs
+• FusionCompiler stub
+• ResolveController stub
+• node graph translation experiments
+
+Exit:
+
+• one simple Fusion composition generated from Motion IR
+
+PHASE 10 — Advanced 2D/3D production
+
+Goals:
+
+• 3D hybrid scenes
+• camera systems
+• compositing pipelines
+• deeper client style automation
+
+Exit:
+
+• studio handles professional multi-technique projects
+
+───
+
+OPEN QUESTIONS
+
+These must be resolved during Phase 0 or deferred explicitly.
+
+1. What is the exact installed HyperFrames CLI surface?
+2. What are the exact OpenCode agent/skill/permission configuration formats in the current version?
+3. What is the exact OmniRoute model discovery API, if any?
+4. Which vision models are available for reference analysis and visual QA?
+5. What is the current official scripting surface for Resolve/Fusion on the target Windows machine?
+6. Does HyperFrames provide deterministic pixel output, or only controlled logical determinism?
+7. What font licensing/local font strategy does the client require?
+8. Should audio beat detection be local-only or permitted through external tools?
+9. What is the preferred intermediate delivery format for Resolve?
+10. How much 3D work is required in the first six months?
+
+───
+
+RISKS
+
+1. HyperFrames API drift
+
+Risk: adapter assumptions become wrong.
+
+Mitigation:
+
+• capability probe
+• version report
+• adapter isolation
+
+2. Over-orchestration
+
+Risk: too many agents create coordination overhead.
+
+Mitigation:
+
+• task graph
+• minimal agent set
+• parallelism only where dependencies allow
+
+3. False visual confidence
+
+Risk: QA assumes visual quality from technical success.
+
+Mitigation:
+
+• separate technical and creative QA
+• human checkpoints
+
+4. Knowledge poisoning
+
+Risk: agents promote bad lessons.
+
+Mitigation:
+
+• candidate/validated/deprecated states
+• provenance
+• human promotion
+
+5. Dependency bloat
+
+Risk: studio becomes hard to install.
+
+Mitigation:
+
+• shared root dependencies
+• explicit exceptions
+• preflight repair approval
+
+6. Renderer nondeterminism
+
+Risk: same input produces slightly different pixels.
+
+Mitigation:
+
+• separate logical determinism from pixel equality
+• record environment/version data
+• avoid promising pixel-identical output unless verified
+
+7. Giant prompt regression
+
+Risk: knowledge gets dumped into prompts.
+
+Mitigation:
+
+• scoped skills
+• artifact-based context
+• selective loading
+
+───
+
+MINIMUM VIABLE VERTICAL SLICE
+
+The first slice must prove the entire core loop.
+
+Slice name
+
+text
+acme-premium-opening
+
+
+Slice shot
+
+text
+shot-001
+
+
+Duration
+
+text
+5 to 7 seconds
+
+
+Canvas
+
+text
+1920x1080
+30fps
+
+
+Creative instruction
+
+“Premium, restrained opening. Strong typographic impact, but controlled. No decorative noise.”
+
+Required chain
+
+text
+human instruction
+↓
+OpenCode
+↓
+preflight
+↓
+creative decomposition
+↓
+MotionSpec
+↓
+Motion IR
+↓
+HyperFrames adapter
+↓
+real HyperFrames render
+↓
+technical QA
+↓
+temporal/visual inspection
+↓
+human feedback
+↓
+localized revision
+↓
+final render
+
+
+Acceptance conditions
+
+1. npm run preflight -- --project acme-premium-opening passes.
+2. A valid motion-spec.yaml exists.
+3. A valid motion-ir.yaml exists.
+4. HyperFrames capability report exists.
+5. Generated HyperFrames scene exists under projects/acme-premium-opening/generated/hyperframes/shot-001/.
+6. Render output exists.
+7. ffprobe metadata matches canvas.
+8. QA reports exist.
+9. Human critique produces a localized revision.
+10. Revised render succeeds without rewriting unrelated work.
+
+───
+
+OPENCODE IMPLEMENTATION TASK GRAPH
+
+This is the actionable implementation graph for OpenCode.
+
+The first graph builds the minimum viable vertical slice.
+
+───
+
+T-000 — Verify external capabilities
+
+Purpose
+
+Verify OpenCode, HyperFrames, npm, Node, FFmpeg, and model/provider assumptions.
+
+Dependencies
+
+None.
+
+Inputs
+
+• this construction specification
+• local environment
+• official documentation where available
+
+Outputs
+
+text
+studio/config/capability-report.json
+
+
+Agent
+
+preflight
+
+Model class
+
+fast/technical
+
+Tools
+
+• bash
+• file read
+• web read only if official docs required
+
+Permissions
+
+yaml
+read: true
+edit: false
+bash: limited
+web: optional
+
+
+Validation
+
+• report schema valid
+• all unknowns explicitly marked
+
+Completion condition
+
+Capability report identifies exact verified commands and unknowns.
+
+───
+
+T-001 — Scaffold root studio repository
+
+Purpose
+
+Create the root directory structure.
+
+Dependencies
+
+T-000
+
+Inputs
+
+• repository structure from this spec
+
+Outputs
+
+text
+MOTION-STUDIO/
+├── studio/
+├── core/
+├── agents/
+├── tools/
+├── runtimes/
+├── pipelines/
+├── clients/
+├── projects/
+├── logs/
+└── tests/
+
+
+Agent
+
+implementer
+
+Model class
+
+coding
+
+Tools
+
+• file edit
+• bash
+
+Permissions
+
+yaml
+read: true
+edit: true
+bash: true
+web: false
+
+
+Validation
+
+• directories exist
+• root package.json exists
+• root AGENTS.md exists
+
+Completion condition
+
+Repository skeleton is present and readable.
+
+───
+
+T-002 — Create shared dependency foundation
+
+Purpose
+
+Configure shared root dependency management.
+
+Dependencies
+
+T-001
+
+Inputs
+
+• dependency architecture
+• Node version policy
+
+Outputs
+
+text
+package.json
+package-lock.json
+.nvmrc
+tsconfig.base.json
+
+
+Agent
+
+implementer
+
+Model class
+
+coding
+
+Tools
+
+• npm
+• file edit
+
+Permissions
+
+yaml
+read: true
+edit: true
+bash: true
+
+
+Validation
+
+• node -v matches engines
+• npm ls --depth=0 succeeds
+• no project-level node_modules required
+
+Completion condition
+
+Shared dependency tree installs cleanly.
+
+───
+
+T-003 — Implement preflight runner
+
+Purpose
+
+Build studio/project preflight.
+
+Dependencies
+
+T-002
+
+Inputs
+
+• preflight requirements
+
+Outputs
+
+text
+tools/preflight/run.ts
+tools/preflight/node-check.ts
+tools/preflight/dependency-check.ts
+tools/preflight/binary-check.ts
+tools/preflight/renderer-probe.ts
+
+
+Agent
+
+implementer
+
+Model class
+
+coding
+
+Tools
+
+• bash
+• file edit
+
+Permissions
+
+yaml
+read: true
+edit: true
+bash: true
+
+
+Validation
+
+• preflight produces valid JSON report
+• no destructive repair without approval
+
+Completion condition
+
+bash
+npm run preflight
+
+
+works.
+
+───
+
+T-004 — Define core artifact schemas
+
+Purpose
+
+Create schemas for artifacts.
+
+Dependencies
+
+T-001
+
+Inputs
+
+• artifact list
+• schema requirements
+
+Outputs
+
+text
+core/schemas/artifact.schema.ts
+core/schemas/task-graph.schema.ts
+core/schemas/qa-report.schema.ts
+core/schemas/lesson.schema.ts
+
+
+Agent
+
+implementer
+
+Model class
+
+coding
+
+Tools
+
+• TypeScript
+• zod or schema validator
+
+Permissions
+
+yaml
+read: true
+edit: true
+bash: false
+
+
+Validation
+
+• schemas compile
+• sample artifacts validate
+
+Completion condition
+
+Artifact validation utility works.
+
+───
+
+T-005 — Create client template and client record system
+
+Purpose
+
+Implement persistent client knowledge.
+
+Dependencies
+
+T-001, T-004
+
+Inputs
+
+• client architecture
+
+Outputs
+
+text
+clients/_template/
+tools/client/create.ts
+core/schemas/client.schema.ts
+
+
+Agent
+
+implementer
+
+Model class
+
+coding
+
+Tools
+
+• file edit
+
+Permissions
+
+yaml
+read: true
+edit: true
+bash: false
+
+
+Validation
+
+• new client creation works
+• client profile validates
+
+Completion condition
+
+bash
+npm run create-client -- acme
+
+
+creates a valid client.
+
+───
+
+T-006 — Create project template and bootstrap
+
+Purpose
+
+Implement canonical project creation.
+
+Dependencies
+
+T-005
+
+Inputs
+
+• project architecture
+
+Outputs
+
+text
+projects/_template/
+tools/project/create.ts
+tools/project/bootstrap.ts
+core/schemas/project.schema.ts
+
+
+Agent
+
+implementer
+
+Model class
+
+coding
+
+Tools
+
+• file edit
+• bash
+
+Permissions
+
+yaml
+read: true
+edit: true
+bash: true
+
+
+Validation
+
+• project tree matches spec
+• project.yaml validates
+• template not mutated
+
+Completion condition
+
+bash
+npm run create-project -- acme-premium-opening --client acme
+
+
+works.
+
+───
+
+T-007 — Define agent definitions and permissions
+
+Purpose
+
+Create minimum agent set.
+
+Dependencies
+
+T-001
+
+Inputs
+
+• agent architecture
+• OpenCode capability report
+
+Outputs
+
+text
+agents/definitions/*.md
+studio/config/agents.yaml
+studio/config/permissions.yaml
+
+
+Agent
+
+orchestrator/architect
+
+Model class
+
+high-reasoning
+
+Tools
+
+• file edit
+
+Permissions
+
+yaml
+read: true
+edit: true
+bash: false
+
+
+Validation
+
+• each agent has responsibilities, outputs, permissions, model class
+• no agent has unnecessary destructive access
+
+Completion condition
+
+Agent definitions are loadable by OpenCode or mapped to native format.
+
+───
+
+T-008 — Implement task graph schema and runner
+
+Purpose
+
+Enable dependency-aware orchestration.
+
+Dependencies
+
+T-004, T-007
+
+Inputs
+
+• task graph architecture
+
+Outputs
+
+text
+core/schemas/task-graph.schema.ts
+tools/tasks/create-graph.ts
+tools/tasks/run-graph.ts
+tools/tasks/ledger.ts
+
+
+Agent
+
+implementer
+
+Model class
+
+coding
+
+Tools
+
+• file edit
+• bash
+
+Permissions
+
+yaml
+read: true
+edit: true
+bash: true
+
+
+Validation
+
+• cyclic dependencies rejected
+• independent tasks can run concurrently
+• dependent tasks wait
+
+Completion condition
+
+A sample DAG executes and writes ledger entries.
+
+───
+
+T-009 — Implement model routing policy
+
+Purpose
+
+Route tasks to appropriate model classes.
+
+Dependencies
+
+T-007, T-008
+
+Inputs
+
+• model routing policy
+
+Outputs
+
+text
+studio/config/models.yaml
+agents/routing/model-policies.yaml
+
+
+Agent
+
+orchestrator
+
+Model class
+
+high-reasoning
+
+Tools
+
+• file edit
+
+Permissions
+
+yaml
+read: true
+edit: true
+bash: false
+
+
+Validation
+
+• task classes map to model classes
+• fallbacks defined
+• no hardcoded provider assumptions
+
+Completion condition
+
+Task runner can select model class from policy.
+
+───
+
+T-010 — Create MotionSpec V2 schema
+
+Purpose
+
+Implement structured creative specification.
+
+Dependencies
+
+T-004
+
+Inputs
+
+• MotionSpec section
+
+Outputs
+
+text
+core/schemas/motion-spec.schema.ts
+studio/skills/motion-spec-authoring/SKILL.md
+
+
+Agent
+
+implementer
+
+Model class
+
+coding
+
+Tools
+
+• TypeScript
+• schema validator
+
+Permissions
+
+yaml
+read: true
+edit: true
+bash: false
+
+
+Validation
+
+• example MotionSpec validates
+• renderer-specific fields rejected in creative spec
+
+Completion condition
+
+MotionSpec can be authored and validated.
+
+───
+
+T-011 — Create Motion IR schema and resolver
+
+Purpose
+
+Resolve MotionSpec into canonical IR.
+
+Dependencies
+
+T-010
+
+Inputs
+
+• Motion IR section
+
+Outputs
+
+text
+core/schemas/motion-ir.schema.ts
+core/ir/resolve-motion-spec.ts
+core/ir/resolve-beats.ts
+core/ir/resolve-relationships.ts
+
+
+Agent
+
+implementer
+
+Model class
+
+coding/high
+
+Tools
+
+• TypeScript
+
+Permissions
+
+yaml
+read: true
+edit: true
+bash: false
+
+
+Validation
+
+• beats resolve to frames
+• relationships resolve to delays/strengths
+• IR validates
+• assumptions/warnings recorded
+
+Completion condition
+
+Example MotionSpec produces valid Motion IR.
+
+───
+
+T-012 — Implement semantic curve resolver
+
+Purpose
+
+Convert semantic motion characteristics into renderer-ready curves.
+
+Dependencies
+
+T-011
+
+Inputs
+
+• curve resolution requirements
+
+Outputs
+
+text
+core/motion/curves/resolver.ts
+core/motion/curves/semantic.ts
+studio/skills/curve-resolution/SKILL.md
+
+
+Agent
+
+motion-designer/implementer
+
+Model class
+
+coding/high
+
+Tools
+
+• TypeScript
+
+Permissions
+
+yaml
+read: true
+edit: true
+bash: false
+
+
+Validation
+
+• no direct creative-word-to-ease map
+• curve output includes semantic source
+• renderer capability influences output
+
+Completion condition
+
+IR curves resolve with documented approximation warnings.
+
+───
+
+T-013 — HyperFrames capability probe
+
+Purpose
+
+Verify real HyperFrames CLI and capabilities.
+
+Dependencies
+
+T-000
+
+Inputs
+
+• capability report
+• HyperFrames installation/source
+
+Outputs
+
+text
+runtimes/hyperframes/capability-report.json
+
+
+Agent
+
+renderer-specialist
+
+Model class
+
+technical
+
+Tools
+
+• bash
+• file read
+
+Permissions
+
+yaml
+read: true
+edit: false
+bash: true
+
+
+Validation
+
+• report lists verified commands
+• unknown flags marked unknown
+• no guessed command is treated as verified
+
+Completion condition
+
+HyperFrames adapter has a verified command surface.
+
+───
+
+T-014 — Build HyperFrames adapter
+
+Purpose
+
+Compile Motion IR into real HyperFrames-compatible scenes.
+
+Dependencies
+
+T-011, T-012, T-013
+
+Inputs
+
+• Motion IR
+• HyperFrames capability report
+
+Outputs
+
+text
+runtimes/hyperframes/adapter.ts
+runtimes/hyperframes/compile.ts
+
+
+Agent
+
+implementer/renderer-specialist
+
+Model class
+
+coding-primary
+
+Tools
+
+• TypeScript
+• file edit
+• bash
+
+Permissions
+
+yaml
+read: true
+edit: true
+bash: true
+
+
+Validation
+
+• generated scene contains deterministic config
+• no internal renderer reimplementation
+• output directory is project-generated
+
+Completion condition
+
+Motion IR compiles into a HyperFrames scene.
+
+───
+
+T-015 — Build HyperFrames render runner
+
+Purpose
+
+Render the generated HyperFrames scene.
+
+Dependencies
+
+T-014
+
+Inputs
+
+• compiled HyperFrames scene
+• verified CLI surface
+
+Outputs
+
+text
+runtimes/hyperframes/render.ts
+tools/render/run.ts
+
+
+Agent
+
+renderer-specialist
+
+Model class
+
+coding-primary
+
+Tools
+
+• bash
+• file read/write
+
+Permissions
+
+yaml
+read: true
+edit: true
+bash: true
+
+
+Validation
+
+• render output exists
+• logs saved
+• warnings captured
+
+Completion condition
+
+shot-001 renders to MP4.
+
+───
+
+T-016 — Implement technical and structural QA
+
+Purpose
+
+Validate files, schemas, assets, and consistency.
+
+Dependencies
+
+T-004, T-011
+
+Inputs
+
+• QA requirements
+
+Outputs
+
+text
+core/qa/technical.ts
+core/qa/structural.ts
+tools/qa/run.ts
+
+
+Agent
+
+technical-qa
+
+Model class
+
+technical
+
+Tools
+
+• bash
+• file read
+
+Permissions
+
+yaml
+read: true
+edit: false
+bash: limited
+
+
+Validation
+
+• missing asset detected
+• invalid schema detected
+• forbidden randomness detected
+
+Completion condition
+
+QA report generated for slice project.
+
+───
+
+T-017 — Implement temporal and visual inspection
+
+Purpose
+
+Generate inspection artifacts for review.
+
+Dependencies
+
+T-015
+
+Inputs
+
+• rendered output
+
+Outputs
+
+text
+tools/inspect/ffprobe.ts
+tools/inspect/frames.ts
+tools/inspect/contact-sheet.ts
+projects/acme-premium-opening/qa/temporal-qa.json
+projects/acme-premium-opening/qa/visual-qa.json
+
+
+Agent
+
+temporal-qa/visual-qa
+
+Model class
+
+mid/vision
+
+Tools
+
+• FFmpeg
+• ffprobe
+• optional vision model
+
+Permissions
+
+yaml
+read: true
+edit: false
+bash: true
+
+
+Validation
+
+• ffprobe metadata matches spec
+• contact sheet exists
+• temporal report exists
+
+Completion condition
+
+Human can review visual/temporal artifacts.
+
+───
+
+T-018 — Implement critique and localized revision loop
+
+Purpose
+
+Allow human feedback to become a targeted patch.
+
+Dependencies
+
+T-016, T-017
+
+Inputs
+
+• human critique
+• QA reports
+• MotionSpec/Motion IR
+
+Outputs
+
+text
+projects/acme-premium-opening/qa/creative-qa.md
+projects/acme-premium-opening/decisions/revision-001.yaml
+
+
+Agent
+
+motion-critic/implementer
+
+Model class
+
+high-reasoning/coding
+
+Tools
+
+• file edit
+• bash
+
+Permissions
+
+yaml
+read: true
+edit: true
+bash: true
+
+
+Validation
+
+• revision request is structured
+• patch touches minimal artifacts
+• unrelated motion preserved
+
+Completion condition
+
+A revision rerenders successfully.
+
+───
+
+T-019 — Implement knowledge proposal system
+
+Purpose
+
+Capture candidate lessons from revision/QA.
+
+Dependencies
+
+T-018
+
+Inputs
+
+• QA reports
+• human approval/rejection
+
+Outputs
+
+text
+tools/knowledge/propose.ts
+clients/acme/knowledge/candidate/lesson-001.yaml
+
+
+Agent
+
+knowledge-curator
+
+Model class
+
+high-reasoning
+
+Tools
+
+• file write
+• knowledge index
+
+Permissions
+
+yaml
+read: true
+edit: knowledge-only
+bash: false
+
+
+Validation
+
+• lesson schema valid
+• lesson status is candidate
+• provenance present
+
+Completion condition
+
+Candidate lesson exists and is not active until promoted.
+
+───
+
+T-020 — Run first vertical slice acceptance test
+
+Purpose
+
+Prove the end-to-end core loop.
+
+Dependencies
+
+T-003, T-006, T-008, T-012, T-015, T-016, T-017, T-018
+
+Inputs
+
+• acme-premium-opening project
+• creative instruction
+• references if available
+
+Outputs
+
+text
+projects/acme-premium-opening/
+├── motion/motion-spec.yaml
+├── motion/motion-ir.yaml
+├── generated/hyperframes/shot-001/
+├── renders/
+├── qa/
+└── decisions/
+
+
+Agent
+
+orchestrator
+
+Model class
+
+high-reasoning
+
+Tools
+
+• task runner
+• render tools
+• QA tools
+
+Permissions
+
+yaml
+read: true
+task: true
+bash: limited
+edit: limited
+
+
+Validation
+
+All MVVS acceptance conditions pass.
+
+Completion condition
+
+The studio completes one real shot from creative instruction to revised final render.
+
+───
+
+FINAL IMPLEMENTATION RULES
+
+OpenCode must obey these rules while building the studio.
+
+1. Do not reimplement existing infrastructure unnecessarily.
+2. Do not invent renderer APIs.
+3. Do not use destructive dependency commands automatically.
+4. Do not let renderers become the source of truth.
+5. Do not allow agents to mutate permanent knowledge without promotion.
+6. Do not create per-project dependency trees by default.
+7. Do not replace creative judgment with generic motion.
+8. Do not treat technical success as creative success.
+9. Do not rewrite scenes when a localized patch is sufficient.
+10. Do not proceed past unverified external capabilities without a deviation report.
+
+The studio is considered successful when:
+
+text
+the human can direct,
+the agents can produce,
+the system can validate,
+the knowledge can accumulate,
+and the output improves over time
+without the human becoming a repair technician.
